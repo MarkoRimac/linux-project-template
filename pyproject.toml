@@ -1,0 +1,15 @@
+[project]
+name = "bytelab-yocto-template"
+version = "0.1.0"
+description = "KAS-managed Yocto template for Byte Lab embedded Linux projects"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+
+# NOTE: Pinned exactly, not with `>=`. A floating dependency is not a pin, and
+#       reproducibility is the point (ROADMAP section 4, rule 7). Bump these
+#       deliberately and record it in CHANGELOG.md.
+#       python-gnupg is what makes the GPG tag verification in kas/base.yml work.
+dependencies = [
+    "kas==5.5",
+    "python-gnupg==0.5.6",
+]

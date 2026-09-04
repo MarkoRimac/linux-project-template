@@ -1,0 +1,62 @@
+#
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# Machine #2: Rockchip RK3576 (ArmSoM Sige5). THIS IS THE REAL TARGET.
+#
+# Build-only until an RK3576 devkit is available. `bitbake bytelab-image`
+# reaching do_image_wic on wrynose is what answers ROADMAP risk #2
+# ("meta-rockchip + RK3576 patches do not apply on wrynose 6.0"). Booting it
+# requires the board.
+#
+# NOTE: meta-rockchip's wrynose branch already ships conf/machine/
+#       rockchip-rk3576-evb.conf (plus rk3588/rk3568/rk3506), so Telram's two
+#       local patches may be wholly or partly redundant here. Diff them against
+#       this branch before carrying them over; drop the `patches:` block below
+#       entirely if upstream now covers it. See docs/ADDING-A-BOARD.md.
+#
+# Telram's patches, for reference, live at:
+#   Telram/100651-sw-telraam-s3/patches/
+#     0001-conf-machine-include-add-support-for-rk3576.patch
+#     0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
+# 0001 touches rockchip-rkbin-ddr_git.bb, rockchip-rkbin-tf-a_git.bb,
+# rockchip-rkbin-optee-os_git.bb, trusted-firmware-a_%.bbappend and
+# u-boot-rockchip.inc.
+#
+
+header:
+  version: 19
+  includes:
+    - ../base.yml
+
+machine: rk3576-sige5
+target: bytelab-image
+
+repos:
+  # meta-rockchip needs meta-oe (LAYERDEPENDS = "core openembedded-layer"),
+  # which base.yml already provides.
+  meta-rockchip:
+    url: https://git.yoctoproject.org/meta-rockchip
+    branch: wrynose
+    commit: 9d02575bfd9ca5e87c394f593f2bbdbdee914d4e
+    # patches:
+    #   0001-rk3576-support:
+    #     repo: meta-local
+    #     path: patches/0001-conf-machine-include-add-support-for-rk3576.patch
+    #   0002-sige5-support:
+    #     repo: meta-local
+    #     path: patches/0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
+
+  meta-arm:
+    url: https://git.yoctoproject.org/meta-arm.git
+    branch: wrynose
+    commit: 0979b80429099f1a42dc0026c8c466cee780bc74
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
+
+local_conf_header:
+  # Telram accepts these for ffmpeg; keep the justification next to the flag,
+  # per ROADMAP section 4 rule 15. Remove if the image does not pull ffmpeg in.
+  licenses: |
+    # Required by ffmpeg, which Telram's product image installs.
+    # LICENSE_FLAGS_ACCEPTED += " commercial_ffmpeg commercial"

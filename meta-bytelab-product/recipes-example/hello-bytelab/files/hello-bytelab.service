@@ -1,0 +1,11 @@
+[Unit]
+Description=Byte Lab example service
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/hello-bytelab
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

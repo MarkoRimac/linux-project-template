@@ -1,0 +1,90 @@
+# bytelab-yocto-template
+
+A clonable Yocto skeleton for Byte Lab embedded Linux products. Multi-machine
+from day one: the layer split, distro and image recipes are shared, and each
+board is one small `kas/machine/*.yml` fragment.
+
+**Yocto release:** wrynose 6.0 LTS (`yocto-6.0.3`), supported to April 2030.
+**Build tool:** KAS, run inside the official container.
+
+---
+
+## Status
+
+| Machine | SoC | State |
+|---|---|---|
+| `qemuarm64-bytelab` | emulated aarch64 (Cortex-A57) | builds, boots under `runqemu`. CI gate |
+| `rpi5-devkit` | BCM2712 (Cortex-A76) | builds, boots on hardware. **Non-product target** |
+| `rk3576-sige5` | Rockchip RK3576 | **build-only — never booted, no board yet** |
+
+Nothing here has been build-verified yet: no Yocto build has run on the intended
+host. Step 1 below is the first thing to do.
+
+> The Raspberry Pi 5 target exists so the SoC-agnostic parts of this template
+> could be validated on real hardware while the RK3576 devkit decision was
+> pending. **It proves the host build, the layer pinning and the CI pipeline. It
+> proves nothing about the Rockchip boot chain, MaskROM flashing, DDR/TF-A
+> blobs, or `meta-rockchip`'s wrynose compatibility.** See
+> [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Quick start
+
+```sh
+# 1. Host tooling (once). Docker must be installed and running.
+pipx install uv                       # or: pip install --user uv
+uv sync                               # installs the pinned kas
+sudo usermod -aG kvm $USER            # for runqemu acceleration; log out and back in
+
+# 2. Point the build somewhere with 100+ GiB free. NOT your home directory
+#    unless it has the space -- see docs/BUILDING.md.
+export KAS_WORK_DIR=/path/with/space/bytelab-build
+export KAS_CONTAINER_ENGINE=docker
+
+# 3. Build and boot the emulated target. Proves the host works.
+uv run kas-container --kvm build kas/machine/qemuarm64.yml:kas/variant/debug.yml
+uv run kas-container --kvm shell kas/machine/qemuarm64.yml -c "runqemu qemuarm64-bytelab nographic"
+
+# 4. Build for the Raspberry Pi 5 and flash it.
+uv run kas-container build kas/machine/rpi5.yml:kas/variant/debug.yml
+bmaptool copy \
+  "$KAS_WORK_DIR"/build/tmp/deploy/images/rpi5-devkit/bytelab-image-debug-rpi5-devkit.rootfs.wic.bz2 \
+  /dev/sdX                            # check the device name first!
+```
+
+Then attach a 3.3 V USB-UART to the Pi's debug header and open the console at
+**115200 8N1 on `ttyAMA10`**. See [docs/FLASHING.md](docs/FLASHING.md).
+
+## Repository layout
+
+```
+kas/
+  base.yml            the ONLY file declaring repos and pins
+  machine/*.yml       one fragment per board; adds exactly one vendor layer
+  variant/*.yml       debug vs release; pure local.conf overlays
+meta-bytelab-bsp/     reusable: machine confs + SoC-agnostic mechanisms (prio 10)
+meta-bytelab-product/ rename per product: distro, images, app recipes (prio 11)
+patches/              patches against upstream layers; never edit them in place
+docs/                 see below
+```
+
+Machine and variant are separate dimensions, combined with a colon:
+
+```sh
+kas-container build kas/machine/<board>.yml:kas/variant/<debug|release>.yml
+```
+
+## Documentation
+
+| Document | Covers |
+|---|---|
+| [BUILDING.md](docs/BUILDING.md) | Host setup, disk requirements, the one blessed build path |
+| [FLASHING.md](docs/FLASHING.md) | Getting an image onto each board |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | `devtool`, `ide-sdk`, `crosstap`, dependency tracing |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Boot chain, partition layout, layer diagram |
+| [ADDING-A-BOARD.md](docs/ADDING-A-BOARD.md) | The portability recipe |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Papercuts and their fixes |
+| [RELEASING.md](docs/RELEASING.md) | Versioning, signing, artifact naming |
+
+## Licence
+
+Copyright (c) Byte Lab Grupa d.o.o.

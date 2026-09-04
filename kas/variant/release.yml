@@ -1,0 +1,16 @@
+#
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# Release variant: overlay only, no machine or repo of its own.
+#
+#   kas-container build kas/machine/rpi5.yml:kas/variant/release.yml
+#
+# Builds the plain image with no debug conveniences: no autologin, no empty root
+# password, no gdbserver. SBOM generation stays ON, because a shipped artifact
+# needs one.
+#
+
+header:
+  version: 19
+
+target: bytelab-image

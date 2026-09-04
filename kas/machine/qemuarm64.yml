@@ -1,0 +1,29 @@
+#
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# Machine #0: emulated aarch64. No hardware, no third-party BSP layer.
+#
+# This is the CI boot gate. `runqemu` boots the built image and asserts a login
+# prompt, so CI proves the image boots rather than merely builds. It is also the
+# cheapest way to prove the build host works before touching any real board.
+#
+# meta-arm is included so the boot chain here is a genuine TF-A + U-Boot chain,
+# which is closer to the Rockchip target than a default Raspberry Pi 5 is.
+#
+
+header:
+  version: 19
+  includes:
+    - ../base.yml
+
+machine: qemuarm64-bytelab
+target: bytelab-image
+
+repos:
+  meta-arm:
+    url: https://git.yoctoproject.org/meta-arm.git
+    branch: wrynose
+    commit: 0979b80429099f1a42dc0026c8c466cee780bc74
+    layers:
+      meta-arm:
+      meta-arm-toolchain:

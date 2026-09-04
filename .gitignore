@@ -1,0 +1,8 @@
+build/
+work/
+!work/.gitkeep
+downloads/
+sstate-cache/
+output/
+tmp/
+.venv/

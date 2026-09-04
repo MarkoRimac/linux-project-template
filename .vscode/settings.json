@@ -1,0 +1,19 @@
+{
+	"files.watcherExclude": {
+		"**/.git/**": true,
+		"**/build/**": true,
+		"**/oe-logs/**": true,
+		"**/oe-workdir/**": true,
+		"**/source-date-epoch/**": true
+	},
+	"files.exclude": {
+		"**/.git/**": true
+	},
+	"C_Cpp.files.exclude": {
+		"**/.git/**": true,
+		"**/build/**": true,
+		"**/oe-logs/**": true,
+		"**/oe-workdir/**": true,
+		"**/source-date-epoch/**": true
+	}
+}

@@ -1,0 +1,34 @@
+#
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# Machine #1: Raspberry Pi 5 (BCM2712, Cortex-A76).
+#
+# WARNING: This is a NON-PRODUCT target. It exists because it boots without any
+# SoC bring-up, which lets the template's SoC-agnostic 80% (KAS orchestration,
+# layer split, distro, image recipes, growfs, CI, docs) be validated on real
+# hardware while the RK3576 devkit decision is pending.
+#
+# It proves nothing about the Rockchip boot chain. BCM2712 boots VideoCore-first
+# (SoC ROM -> SPI EEPROM bootloader -> config.txt -> kernel). There is no TF-A,
+# no OP-TEE, no SPL/TPL, no DDR blob you supply, and no loader1/loader2 GPT.
+# Do not write docs/ADDING-A-BOARD.md or the boot-chain section of
+# docs/ARCHITECTURE.md from this machine. See docs/ARCHITECTURE.md.
+#
+# Do NOT set RPI_USE_U_BOOT. It inserts U-Boot above the closed VideoCore
+# firmware, producing a U-Boot prompt attached to a boot chain that is wrong for
+# both this board and for RK3576.
+#
+
+header:
+  version: 19
+  includes:
+    - ../base.yml
+
+machine: rpi5-devkit
+target: bytelab-image
+
+repos:
+  meta-raspberrypi:
+    url: https://github.com/agherzan/meta-raspberrypi.git
+    branch: wrynose
+    commit: f62c67921474370829d24a4fa01ef88543f3906b

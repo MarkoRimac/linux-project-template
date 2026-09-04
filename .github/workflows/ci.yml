@@ -1,0 +1,146 @@
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# NOTE: green CI means THE TEMPLATE BUILDS, and that the emulated target boots.
+#       It does NOT mean the template boots on Rockchip. Only the rk3576 board
+#       can show that, and it is build-only here.
+#
+# TODO(decide): GitHub Actions vs GitLab CI at git.byte-lab.com is still open
+#               (ROADMAP section 8, manager ask 5). This file is the GitHub
+#               version; port it once the platform is settled.
+#
+# RUNNER REQUIREMENTS: a cold Yocto build needs ~100 GiB of disk and several
+# hours. Hosted runners cannot do this. These jobs assume a self-hosted runner
+# with a persistent cache volume.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  KAS_CONTAINER_ENGINE: docker
+
+jobs:
+  # Cheap, runs anywhere, fails fast. Guards the machine/product boundary.
+  guards:
+    name: Layer boundary guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Board-specific strings must not escape the machine layer
+        run: |
+          # Anything board-specific belongs in a machine conf or a machine kas
+          # fragment. If these strings appear in the distro, the image recipes
+          # or the shared BSP includes, the abstraction has leaked.
+          #
+          # Comment lines are exempt: explaining WHY a boundary exists is the
+          # opposite of violating it, and a guard that punishes documentation is
+          # a guard that gets deleted.
+          # Paths are passed explicitly rather than through a string variable:
+          # word-splitting an unquoted variable works in bash but not in every
+          # shell, and a guard that silently scans nothing always passes.
+          leaked() {
+            grep -rInE "$1" \
+              meta-bytelab-product/ \
+              meta-bytelab-bsp/conf/machine/include/ \
+              meta-bytelab-bsp/recipes-core/ \
+              | grep -vE ':[0-9]+:[[:space:]]*#'
+          }
+          fail=0
+          if leaked 'raspberrypi|bcm2712|ttyAMA10|config\.txt|dtoverlay' ; then
+            echo "::error::Raspberry Pi specifics leaked outside the machine layer."
+            fail=1
+          fi
+          if leaked 'rockchip|rk35|ttyFIQ0|rkdeveloptool' ; then
+            echo "::error::Rockchip specifics leaked outside the machine layer."
+            fail=1
+          fi
+          exit $fail
+
+      - name: Every layer must declare wrynose compatibility
+        run: |
+          for f in meta-bytelab-bsp/conf/layer.conf meta-bytelab-product/conf/layer.conf; do
+            grep -q 'LAYERSERIES_COMPAT.*wrynose' "$f" \
+              || { echo "::error::$f is not marked wrynose-compatible"; exit 1; }
+          done
+
+      - name: Repositories must be pinned to a commit, not a branch head
+        run: |
+          # ROADMAP section 4 rule 7. A branch without a commit is not a pin.
+          python3 - <<'PY'
+          import re, sys, pathlib
+          bad = []
+          for p in pathlib.Path("kas").rglob("*.yml"):
+              text = p.read_text()
+              for m in re.finditer(r'^(\s{2,})(\S+):\n((?:\1\s+.*\n)+)', text, re.M):
+                  block = m.group(3)
+                  if "url:" in block and "commit:" not in block:
+                      bad.append(f"{p}: {m.group(2)}")
+          if bad:
+              print("::error::unpinned repos:\n" + "\n".join(bad))
+              sys.exit(1)
+          print("all repos pinned")
+          PY
+
+  build:
+    name: Build ${{ matrix.machine }}
+    runs-on: [self-hosted, yocto]
+    needs: guards
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - machine: qemuarm64
+            variant: release
+          - machine: rpi5
+            variant: release
+          # Build-only: no RK3576 hardware exists to boot it on yet.
+          - machine: rk3576
+            variant: release
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          export KAS_WORK_DIR="${RUNNER_TEMP}/kas-${{ matrix.machine }}"
+          mkdir -p "$KAS_WORK_DIR"
+          uv run kas-container build \
+            kas/machine/${{ matrix.machine }}.yml:kas/variant/${{ matrix.variant }}.yml
+
+      - name: Publish image artifacts
+        if: matrix.machine != 'qemuarm64'
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.machine }}
+          path: |
+            ${{ runner.temp }}/kas-${{ matrix.machine }}/build/tmp/deploy/images/**/*.wic.bz2
+            ${{ runner.temp }}/kas-${{ matrix.machine }}/build/tmp/deploy/images/**/*.wic.bmap
+          if-no-files-found: error
+
+  boot-test:
+    name: Boot test (qemuarm64)
+    runs-on: [self-hosted, yocto]
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot the image and expect a login prompt
+        run: |
+          export KAS_WORK_DIR="${RUNNER_TEMP}/kas-qemuarm64"
+          uv run kas-container --kvm shell kas/machine/qemuarm64.yml -c '
+            python3 -c "
+          import pexpect, sys
+          child = pexpect.spawn(\"runqemu qemuarm64-bytelab nographic slirp\", timeout=300, encoding=\"utf-8\")
+          child.logfile_read = sys.stdout
+          child.expect(r\"login:\")
+          print(\"\\nreached a login prompt\")
+          child.sendline(\"root\")
+          child.expect(r\"#\")
+          child.sendline(\"findmnt / && systemctl is-system-running --wait || true\")
+          child.expect(r\"#\")
+          child.sendcontrol(\"a\"); child.send(\"x\")
+          "'

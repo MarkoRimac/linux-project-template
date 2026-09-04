@@ -1,0 +1,84 @@
+#
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# Common layer set and pins for every machine. This is the ONLY file that
+# declares repositories. Machine fragments in kas/machine/ include this file and
+# add exactly one vendor BSP layer; variant fragments in kas/variant/ are pure
+# local.conf overlays.
+#
+# Build with a machine and a variant combined:
+#   kas-container build kas/machine/rpi5.yml:kas/variant/debug.yml
+#
+# kas merges colon-combined files as if they were statically included: scalars
+# (machine/distro/target) are overridden by the later file, dictionaries
+# (local_conf_header, repos) are merged recursively.
+#
+
+header:
+  version: 19
+
+signers:
+  YoctoBuildandRelease:
+    fingerprint: 2AFB13F28FBBB0D1B9DAF63087EB3D32FB631AD9
+    # NOTE: To avoid DNS problems IPv4 is written explicitly here.
+    gpg_keyserver: 185.125.188.26 # keyserver.ubuntu.com
+
+# Defaults. Every machine fragment overrides `machine` and `target`.
+machine: qemuarm64
+distro: bytelab
+target: bytelab-image
+
+repos:
+  # NOTE: Poky is a reference distro; we ship our own in meta-bytelab-product,
+  #       so only bare openembedded-core is needed. Verified: both
+  #       meta-raspberrypi and meta-rockchip declare LAYERDEPENDS on "core"
+  #       only (meta-rockchip additionally wants meta-oe), and qemuarm64's
+  #       machine conf lives inside openembedded-core itself.
+
+  bitbake:
+    url: https://github.com/openembedded/bitbake.git
+    tag: yocto-6.0.3 # wrynose 6.0 LTS, supported to April 2030
+    commit: fae9db3168dbff1b8c76fe9c6726a9687ff97514
+    signed: true
+    allowed_signers:
+      - YoctoBuildandRelease
+    layers:
+      .: disabled
+
+  core:
+    url: https://github.com/openembedded/openembedded-core.git
+    tag: yocto-6.0.3 # wrynose 6.0 LTS
+    commit: ef022bf82d79015802309d14c28b13373ebe53f5
+    signed: true
+    allowed_signers:
+      - YoctoBuildandRelease
+    layers:
+      meta:
+
+  meta-openembedded:
+    url: https://github.com/openembedded/meta-openembedded.git
+    branch: wrynose
+    commit: 14282a02be9c74a1276a7cda7d6c89e054699a11
+    layers:
+      meta-oe:
+
+  # NOTE: Include the Yocto layers of this project.
+  meta-local:
+    layers:
+      meta-bytelab-bsp:
+      meta-bytelab-product:
+
+local_conf_header:
+  # Build directories. KAS_WORK_DIR should point somewhere with 100+ GiB free;
+  # see docs/BUILDING.md. DL_DIR and SSTATE_DIR are deliberately shared across
+  # every machine, TMPDIR is not.
+  paths: |
+    DL_DIR = "${TOPDIR}/downloads"
+    SSTATE_DIR = "${TOPDIR}/sstate-cache"
+    TMPDIR = "${TOPDIR}/tmp"
+  # Reclaim per-recipe work directories as the build proceeds. Telram leaves
+  # this off; the template turns it on because a single aarch64 image is
+  # 60-90 GiB without it, and the three machines share no target sstate
+  # (cortexa57 / cortexa76 / cortexa72-cortexa53-crypto).
+  diskspace: |
+    INHERIT += "rm_work"
