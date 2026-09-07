@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (non-product, validates the SoC-agnostic parts on real hardware),
   `rk3576-sige5` (the real target, build-only until a devkit is available).
 - `systemd-repart` + `x-systemd.growfs` first-boot rootfs expansion, lifted from
-  the Telram project.
+  the reference project.
 - CI guards that fail if board-specific strings escape the machine layer, if a
   layer is not marked wrynose-compatible, or if a repo is not pinned to a commit.
 
@@ -46,34 +46,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   comparison and a revisit trigger in handbook chapter 01, so the negative
   result is not re-derived later.
 
-### Notes on divergence from the Telram reference
+### Notes on divergence from the reference project
 
 - Targets **wrynose 6.0 LTS** (`yocto-6.0.3`) rather than walnascar 5.2.4, which
   went EOL in November 2025.
 - No poky. The poky combo-layer repository is deprecated upstream: its master
   branch is no longer updated and its newest release branch is `walnascar`
   (5.2), with no `wrynose` branch and no `yocto-6.x` tag. `openembedded-core`,
-  `bitbake` and `meta-yocto` are consumed directly instead. Telram reaches the
-  same layout by preference; on this release it is not optional.
-- Byte Lab layer priorities raised to 10 (BSP) and 11 (product). Telram uses 6
-  and 7, which sit *below* the vendor BSP layers (both are 9), so Byte Lab
+  `bitbake` and `meta-yocto` are consumed directly instead. The reference project reaches
+  the same layout by preference; on this release it is not optional.
+- Byte Lab layer priorities raised to 10 (BSP) and 11 (product). The reference project uses
+  6 and 7, which sit *below* the vendor BSP layers (both are 9), so Byte Lab
   overrides would silently lose. **This contradicts the drafted rule, which
   specified 6 and 7; the rule has been amended in the handbook.**
-- `meta-bytelab-bsp` declares `LAYERDEPENDS = "core"`. Telram's equivalent
+- `meta-bytelab-bsp` declares `LAYERDEPENDS = "core"`. The reference project's equivalent
   declares `"core rockchip"`, which makes the reusable layer unbuildable without
   meta-rockchip present.
 - `conf/machine/include/common.inc` no longer forces `u-boot` and
   `kernel-devicetree`; a default Raspberry Pi 5 has no U-Boot at all. Machines
   that boot via U-Boot add the dependency themselves.
 - One documented build path (`kas-container` on Docker) instead of three. The
-  container removes the need for Telram's `shell.nix` and its Nix environment
+  container removes the need for the reference project's `shell.nix` and its Nix environment
   scrubbing.
 - `DISTRO_FEATURES` trimmed to `systemd pam ipv4 ipv6 usbhost`; no graphics
   stack in a boot template.
 - `PACKAGE_CLASSES` set to `package_ipk` rather than the OE default
   `package_rpm`. **Pending review with Jakov.**
 - `kas` and `python-gnupg` pinned exactly rather than with `>=`.
-- Images renamed `bytelab-image` / `bytelab-image-debug` from Telram's generic
+- Images renamed `bytelab-image` / `bytelab-image-debug` from the reference project's generic
   `image` / `image-debug`.
-- `SRCREV = "${AUTOREV}"` from Telram's graphics bbappends deliberately not
+- `SRCREV = "${AUTOREV}"` from the reference project's graphics bbappends deliberately not
   carried over.

@@ -19,20 +19,19 @@ Never edit a fetched layer in place — KAS re-clones it and your change vanishe
 
 ## Currently empty, on purpose
 
-Telram carries two patches adding RK3576 and ArmSoM Sige5 support to
-`meta-rockchip`. They are **not** copied here yet, because `meta-rockchip`'s
-`wrynose` branch already ships `conf/machine/rockchip-rk3576-evb.conf` (plus
-rk3588, rk3568 and rk3506 EVB configs), so they may be wholly or partly
-redundant on this release.
+The reference project this template draws on (see the root
+[README.md](../README.md)) carries two patches adding RK3576 and ArmSoM Sige5
+support to `meta-rockchip`. They are **not** copied here yet, because
+`meta-rockchip`'s `wrynose` branch already ships
+`conf/machine/rockchip-rk3576-evb.conf` (plus rk3588, rk3568 and rk3506 EVB
+configs), so they may be wholly or partly redundant on this release.
 
-Establishing that is the first task on the Rockchip machine, and it is what
-answers ROADMAP risk #2. Diff Telram's patches against the wrynose branch before
-carrying anything over:
+Establishing that is the first task on the Rockchip machine. Diff those two
+patches against the `wrynose` branch before carrying anything over:
 
 ```
-Telram/100651-sw-telraam-s3/patches/
-  0001-conf-machine-include-add-support-for-rk3576.patch
-  0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
+0001-conf-machine-include-add-support-for-rk3576.patch
+0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
 ```
 
 `0001` touches `rockchip-rkbin-ddr_git.bb`, `rockchip-rkbin-tf-a_git.bb`,

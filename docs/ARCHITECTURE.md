@@ -14,7 +14,7 @@
 
 Higher priority wins for same-named recipes. Byte Lab layers sit **above** every
 third-party BSP layer deliberately: both `meta-raspberrypi` and `meta-rockchip`
-use priority 9, so a Byte Lab layer at 6 (as in the Telram project) would
+use priority 9, so a Byte Lab layer at 6 (as in the reference project) would
 silently lose any override contest with the vendor. Check a new vendor layer's
 `BBFILE_PRIORITY` before adding it.
 

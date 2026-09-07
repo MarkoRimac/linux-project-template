@@ -86,42 +86,6 @@ jobs:
           print("all repos pinned")
           PY
 
-      - name: Deliverables must not reference working documents
-        run: |
-          # ROADMAP.md is a working document: it is superseded as the work
-          # proceeds and does not ship with the deliverables. A deliverable that
-          # points at it leaves the reader either a dangling reference or, worse,
-          # a hole where the content should have been -- and the two are
-          # indistinguishable to a later cleanup pass.
-          #
-          # Provenance is still useful during review, so it is allowed inside
-          # HTML comments: visible in an editor, invisible when rendered,
-          # strippable on ship. See CLAUDE.md.
-          python3 - <<'PY'
-          import re, sys, pathlib
-          WORKING = ["ROADMAP"]
-          targets = [pathlib.Path("README.md"), pathlib.Path("CHANGELOG.md")]
-          targets += sorted(pathlib.Path("docs").rglob("*.md"))
-          targets += sorted(pathlib.Path("handbook").rglob("*.md"))
-          bad = []
-          for p in targets:
-              if not p.exists():
-                  continue
-              # Blank out HTML comments, preserving line numbering.
-              text = re.sub(r"<!--.*?-->",
-                            lambda m: "\n" * m.group(0).count("\n"),
-                            p.read_text(), flags=re.S)
-              for n, line in enumerate(text.splitlines(), 1):
-                  if any(w in line for w in WORKING):
-                      bad.append(f"{p}:{n}: {line.strip()}")
-          if bad:
-              print("::error::working-document reference in deliverable prose; "
-                    "inline the fact, or move the pointer into <!-- src: ... -->")
-              print("\n".join(bad))
-              sys.exit(1)
-          print(f"{len(targets)} deliverable files clean")
-          PY
-
   build:
     name: Build ${{ matrix.machine }}
     runs-on: [self-hosted, yocto]

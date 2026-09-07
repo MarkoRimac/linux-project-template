@@ -64,6 +64,7 @@ kas/
 meta-bytelab-bsp/     reusable: machine confs + SoC-agnostic mechanisms (prio 10)
 meta-bytelab-product/ rename per product: distro, images, app recipes (prio 11)
 patches/              patches against upstream layers; never edit them in place
+scripts/              local checks; not run by CI
 docs/                 see below
 ```
 
@@ -84,6 +85,18 @@ kas-container build kas/machine/<board>.yml:kas/variant/<debug|release>.yml
 | [ADDING-A-BOARD.md](docs/ADDING-A-BOARD.md) | The portability recipe |
 | [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Papercuts and their fixes |
 | [RELEASING.md](docs/RELEASING.md) | Versioning, signing, artifact naming |
+
+## Provenance
+
+The layer split, the debug/release image pair and much of the `docs/` structure
+are derived from **Telram S3**, a Byte Lab Rockchip RK3576 product built on
+Yocto walnascar. Where this template diverges from it deliberately, and why, is
+listed in [CHANGELOG.md](CHANGELOG.md).
+
+**This is the only place that project is named.** Comments elsewhere in this
+repository say "the reference project" instead, so that a fork of this template
+for one customer carries no other customer's project name, paths or internal
+detail. Keep it that way when you add to it.
 
 ## Licence
 

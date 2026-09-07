@@ -7,7 +7,8 @@ Every machine produces a `wic` image. Only the write mechanism differs.
 ## Rockchip (RK3576, and the Luckfox boards)
 
 > **Status: not yet validated.** No RK3576 board is available, so the procedure
-> below is derived from Telram's `docs/FLASHING.md` rather than run here. The
+> below is derived from the reference project's `docs/FLASHING.md` rather
+> than run here. The
 > `rkdeveloptool` half can and should be validated on the Luckfox Lyra Pi that
 > Byte Lab already owns — it speaks the same protocol — before this file is
 > treated as authoritative.

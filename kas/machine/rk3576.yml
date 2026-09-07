@@ -9,13 +9,12 @@
 # requires the board.
 #
 # NOTE: meta-rockchip's wrynose branch already ships conf/machine/
-#       rockchip-rk3576-evb.conf (plus rk3588/rk3568/rk3506), so Telram's two
+#       rockchip-rk3576-evb.conf (plus rk3588/rk3568/rk3506), so the reference project's two
 #       local patches may be wholly or partly redundant here. Diff them against
 #       this branch before carrying them over; drop the `patches:` block below
 #       entirely if upstream now covers it. See docs/ADDING-A-BOARD.md.
 #
-# Telram's patches, for reference, live at:
-#   Telram/100651-sw-telraam-s3/patches/
+# The reference project (see README.md) carries two such patches:
 #     0001-conf-machine-include-add-support-for-rk3576.patch
 #     0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
 # 0001 touches rockchip-rkbin-ddr_git.bb, rockchip-rkbin-tf-a_git.bb,
@@ -55,8 +54,8 @@ repos:
       meta-arm-toolchain:
 
 local_conf_header:
-  # Telram accepts these for ffmpeg; keep the justification next to the flag,
-  # per ROADMAP section 4 rule 15. Remove if the image does not pull ffmpeg in.
+  # The reference project accepts these for ffmpeg. Keep the justification
+  # next to the flag. Remove if the image does not pull ffmpeg in.
   licenses: |
-    # Required by ffmpeg, which Telram's product image installs.
+    # Required by ffmpeg, which the reference project's product image installs.
     # LICENSE_FLAGS_ACCEPTED += " commercial_ffmpeg commercial"

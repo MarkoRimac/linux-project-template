@@ -36,7 +36,7 @@ repos:
   #       expects you to consume openembedded-core, bitbake and meta-yocto
   #       directly, which is what this file does.
   #
-  #       Telram's base.yml reaches the same layout by preference ("Poky is more
+  #       The reference project's base.yml reaches the same layout by preference ("Poky is more
   #       of a reference distro, so not really needed"). On this release it is
   #       no longer a preference.
   #
@@ -85,7 +85,7 @@ local_conf_header:
     DL_DIR = "${TOPDIR}/downloads"
     SSTATE_DIR = "${TOPDIR}/sstate-cache"
     TMPDIR = "${TOPDIR}/tmp"
-  # Reclaim per-recipe work directories as the build proceeds. Telram leaves
+  # Reclaim per-recipe work directories as the build proceeds. The reference project leaves
   # this off; the template turns it on because a single aarch64 image is
   # 60-90 GiB without it, and the three machines share no target sstate
   # (cortexa57 / cortexa76 / cortexa72-cortexa53-crypto).

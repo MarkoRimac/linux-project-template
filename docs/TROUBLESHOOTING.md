@@ -32,7 +32,7 @@ already enabled. See [BUILDING.md](BUILDING.md).
 host Python is typically far newer than BitBake expects.
 
 **Fix.** Do not build natively. Use `kas-container`, which is the only supported
-path here. (Telram works around this with a `shell.nix`; the container makes
+path here. (The reference project works around this with a `shell.nix`; the container makes
 that unnecessary.)
 
 ### `pip install --user uv` fails with `externally-managed-environment`

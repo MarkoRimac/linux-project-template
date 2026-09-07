@@ -5,7 +5,7 @@
 This template documents a single way to build: KAS running inside the official
 `ghcr.io/siemens/kas/kas` container.
 
-Telram offers three paths (native + `uv`, `kas-container` + podman, `nix-shell`).
+The reference project offers three paths (native + `uv`, `kas-container` + podman, `nix-shell`).
 That exists because Arch and Manjaro are not in Yocto's `SANITY_TESTED_DISTROS`
 and native builds hit host toolchain and Python version problems. The container
 supplies a known-good Debian, so the Nix workaround and its eight-variable
