@@ -26,7 +26,7 @@ and revisit it only if a stated assumption changes.
 lichee/Tina, with Yocto buried inside it) and it is client-owned, so it shows
 the shape of the problem rather than a Byte Lab choice. Fischer is Toradex /
 NXP i.MX — **whether it uses the Toradex BSP or Torizon is an open question**
-(ROADMAP §8) and this chapter cannot be finished until someone answers it.
+and this chapter cannot be finished until someone answers it.
 
 ---
 
@@ -63,7 +63,8 @@ gives it to you for free.
 
 ## Worked example: RV1106 (Luckfox Pico Zero) — the answer is "not Yocto"
 
-The concrete case, from ROADMAP §2:
+<!-- src: ROADMAP §2 (devkit mismatch analysis) -->
+The concrete case:
 
 - **256 MiB RAM**, typically SPI NAND rather than eMMC.
 - Single Cortex-A7, **32-bit ARMv7** — shares no architecture with the aarch64
@@ -88,6 +89,72 @@ a defensible "no" — the handbook is more credible for containing one.
 - Prior Byte Lab work (Telram) already boots it.
 
 ---
+
+## Layer management: kas vs bitbake-setup
+
+A sub-decision *within* the Yocto track, not a fifth option. Once you have
+chosen Yocto, something still has to fetch the layers at the right revisions and
+set up a build directory. Two tools do that.
+
+`bitbake-setup` is the Yocto Project's own answer, added to bitbake on
+2026-06-11 and shipping in the 6.0 wrynose release. Because it is upstream and
+kas is third-party, "why aren't we using the official tool?" is a reasonable
+question and will be asked again.
+
+**Evaluated 2026-09-07 against bitbake `yocto-6.0.3` (`fae9db3168db`).**
+
+| | kas 5.5 | bitbake-setup |
+|---|---|---|
+| Containerised build | `kas-container`, docker or podman | **none** |
+| Host-dependency answer | the container | `install-buildtools` (prebuilt host toolchain) |
+| GPG tag verification | `signed:` + `allowed_signers` + fingerprint | **none** |
+| `build` / `shell` subcommand | yes | no |
+| Commit pinning | yes | yes (`rev` is required, accepts a SHA) |
+| Sync with upstream config changes | no | yes (`status` / `update`) |
+| Upstream-official | no | yes |
+| Config composition | colon-combined YAML | JSON plus OE config fragments |
+
+**Decision: stay on kas.** One ground is decisive and two compound it.
+
+1. **No containerised build.** There is no reference to docker, podman or
+   containers anywhere in the tool, its JSON schema, or its documentation. Its
+   answer to an unsupported host distro is `install-buildtools`, which downloads
+   a prebuilt host toolchain. That is the weaker answer to the same problem, and
+   weaker precisely for Arch and Manjaro hosts -- which is why containerising
+   was the right call in the first place ([chapter 04](04-reproducibility.md)
+   rule 3). A tool that cannot run the blessed build path cannot replace the
+   tool that defines it.
+2. **No signature verification.** Its git source schema is
+   `uri` / `branch` / `rev` / `describe` / `remotes` -- there is nowhere to
+   express "and check the tag is signed by this key". Pinning to a commit
+   survives; verifying who produced it does not.
+3. **No `build` or `shell` subcommand.** The subcommands are `list`, `init`,
+   `status`, `update`, `install-buildtools` and `settings`. You source
+   `init-build-env` and run bitbake yourself, so CI needs its own wrapper where
+   today it is a single `kas-container build` invocation.
+
+**What it does better,** and why this is worth revisiting rather than closing:
+it is upstream, so it removes a third-party dependency from the critical path;
+and `status` / `update` synchronise an existing build with upstream
+configuration changes, which kas has no equivalent for.
+
+**Revisit when** any of these happens, whichever comes first:
+
+- `bitbake-setup` grows a containerised-build story;
+- the blessed build path stops being a container;
+- the next LTS bump, as a scheduled re-check.
+
+**If the container gap closes, migration is not structurally hard.**
+`oe-fragments-one-of` maps cleanly onto a machine × variant split, and
+`OE_FRAGMENTS_BUILTIN ?= "machine:MACHINE distro:DISTRO"` in
+`openembedded-core`'s `conf/bitbake.conf` means `machine/<name>` works as a
+virtual fragment with no file to write. Free-form `local.conf` overlays would
+become real `.conf` fragments in the product layer, which is arguably a cleaner
+model than kas's `local_conf_header`. The signature-verification gap would still
+need an answer.
+
+*Status: decided for this template, on the evidence above. Not a Byte Lab
+standard -- no reviewer has been named.*
 
 ## What to write down once you have decided
 

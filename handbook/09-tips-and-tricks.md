@@ -1,6 +1,7 @@
 # 09 - Tips and Tricks
 
-The living cookbook, extracted from `ROADMAP.md` §6. Everything here is
+<!-- src: ROADMAP §6 (tips worth carrying over) -->
+The living cookbook. Everything here is
 already-proven material lifted from a real project and credited, not invented.
 
 Add to it when you learn something the hard way. A trick that stays in one
@@ -124,6 +125,26 @@ Unlike BitBake's `require` / `include`, which are relative to the including
 file, a plain-string entry in kas's `header.includes` resolves against the
 **repository top level**. From `kas/machine/rpi5.yml`, write `kas/base.yml`, not
 `../base.yml`.
+
+## Renaming a vendor machine costs you its overrides
+
+Deriving `rpi5-devkit` from `raspberrypi5` with `require` inherits the *file*,
+not the *overrides*. BitBake keys those on the machine name, so
+`KBUILD_DEFCONFIG:raspberrypi5` never fires. Declare the inheritance:
+
+```
+MACHINEOVERRIDES =. "raspberrypi5:"
+```
+
+Check what you would lose before renaming:
+
+```sh
+grep -rn ":<base-machine>\b" <vendor-layer>/ | grep -v '\.patch:'
+```
+
+Some of these fail loudly (a missing defconfig). The dangerous ones do not:
+oe-core selects `linux-yocto`'s branch and SRCREV this way, so a missed override
+builds a different kernel and says nothing.
 
 ## Host builds on Arch/Manjaro
 

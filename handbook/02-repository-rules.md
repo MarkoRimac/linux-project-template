@@ -1,11 +1,12 @@
 # 02 - Repository Rules
 
-Extracted from `ROADMAP.md` §4. Each rule carries its evidence and its status.
-A rule marked **proposal** has no named reviewer yet and is not binding.
+<!-- src: ROADMAP §4 (draft rule set) -->
+Each rule carries its evidence and its status. A rule marked **proposal** has no
+named reviewer yet and is not binding.
 
 Status key: **proven** = the template does this and it has been build-verified;
 **adopted** = the template does this, not yet exercised; **proposal** = drafted,
-awaiting a reviewer; **amended** = the ROADMAP draft was wrong, see the note.
+awaiting a reviewer; **amended** = the original draft was wrong, see the note.
 
 ---
 
@@ -20,8 +21,8 @@ fails if board-specific strings escape the machine layer.
 **2. Layer priorities are explicit and documented.** BSP **10**, product **11**.
 Higher wins.
 
-> **Amended.** ROADMAP §4 rule 2 as drafted says BSP 6, product 7, copying
-> Telram. That is wrong for any project carrying a vendor BSP layer:
+> **Amended.** <!-- src: ROADMAP §4 rule 2 --> This rule was originally drafted
+> as BSP 6, product 7, copying Telram. That is wrong for any project carrying a vendor BSP layer:
 > `meta-raspberrypi` and `meta-rockchip` are both `BBFILE_PRIORITY 9`, so
 > priorities of 6 and 7 sit *below* them and Byte Lab overrides silently lose.
 > The template uses 10 and 11. If you add a vendor layer above 10, raise ours
@@ -72,7 +73,8 @@ unbuildable. Status: proposal -- needs an owner and somewhere to put them.*
 **10. `DL_DIR` and `SSTATE_DIR` are configured out of the source tree and
 shareable,** so a second engineer's first build is not a six-hour build.
 *Status: adopted, partially.* The template shares them across machines but they
-are still per-developer; a shared team mirror is ROADMAP §8's CI question.
+are still per-developer. A shared team mirror depends on who owns build
+infrastructure -- see [chapter 04](04-reproducibility.md).
 
 **11. New projects start on the newest Yocto LTS.** Record the release and its
 EOL date in the README.

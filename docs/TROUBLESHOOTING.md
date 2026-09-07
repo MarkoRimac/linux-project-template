@@ -166,6 +166,33 @@ clone comes straight from upstream with a correct `HEAD`. Which of those becomes
 the template's answer is an open decision -- dropping the premirror costs
 resilience when an upstream host is down.
 
+### `Could not locate BSP definition for <machine>/standard and no defconfig was provided`
+
+**Cause.** The machine derives from a vendor machine conf under a different
+name, and `MACHINEOVERRIDES` was not extended. BitBake keys overrides on the
+machine *name*, so a vendor setting written as
+
+```
+KBUILD_DEFCONFIG:raspberrypi5 ?= "bcm2712_defconfig"
+```
+
+is silently skipped when `MACHINE` is `rpi5-devkit`. `kernel-yocto` then finds
+neither a BSP definition nor a defconfig and stops.
+
+**Fix.** Declare the inheritance in the machine conf, above the `require`:
+
+```
+MACHINEOVERRIDES =. "raspberrypi5:"
+require conf/machine/raspberrypi5.conf
+```
+
+**Why this matters beyond the kernel.** The failure above is the loud case. The
+quiet case is worse: `KBRANCH:qemuarm64` and `SRCREV_machine:qemuarm64` in
+oe-core select the kernel branch and revision for `linux-yocto`. Miss those and
+the build does not fail -- it builds a *different kernel* than intended. Any
+time you rename a vendor machine, grep the vendor layer for `:<base-machine>`
+and confirm you still get everything it sets.
+
 ---
 
 ## Boards

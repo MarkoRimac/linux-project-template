@@ -5,32 +5,42 @@ half. Where `bytelab-yocto-template` is a repo you clone and build, this is the
 set of rules and reference material that applies equally to Telram (Yocto +
 Rockchip), Vusion (Allwinner vendor SDK), Kärcher and Fischer (Toradex / NXP).
 
-> **Staging location.** ROADMAP §3 specifies this as its own repository,
-> `bytelab-embedded-linux-handbook`. It lives here for now because ROADMAP §8
-> ask 4 -- where the two repos live and who owns them long-term -- has not been
-> answered yet. Nothing here depends on the template repo; move it with
-> `git mv handbook/ ../bytelab-embedded-linux-handbook/` once that lands.
+> **Staging location.** <!-- src: ROADMAP §3, §8 ask 4 --> This is intended to
+> be its own repository, `bytelab-embedded-linux-handbook`. It lives inside the
+> template repo for now because where the two repos live, and who owns them
+> long-term, has not been decided. Nothing here depends on the template repo;
+> move it with `git mv handbook/ ../bytelab-embedded-linux-handbook/` once that
+> is settled.
 
 ## Status
 
-Chapters are extracted from `ROADMAP.md`, which holds the drafted material.
-Extraction is not endorsement: per ROADMAP §9, *"rules are written by the least
-experienced person in the room"* is a live risk, and every rule needs a named
-reviewer before it is a rule rather than a proposal.
+<!-- src: chapters extracted from ROADMAP.md; see the provenance map below -->
+Being written down is not endorsement. *"Rules written by the least experienced
+person in the room"* is a live risk here, and every rule needs a named reviewer
+before it is a rule rather than a proposal.
 
-| Chapter | Source | State |
-|---|---|---|
-| `00-intro-for-rtos-engineers.md` | `embedded-linux-intro.md` | **written** -- supersedes the repo-root file, which should be deleted |
-| `01-choosing-a-build-system.md` | ROADMAP §1, §2 | **written** -- Torizon section blocked on the Fischer question |
-| `02-repository-rules.md` | ROADMAP §4 | **written** -- rule 2 amended, see the chapter |
-| `03-readme-contract.md` | ROADMAP §5 | **written** |
-| `04-reproducibility.md` | ROADMAP §4 rules 7-11 | **written** |
-| `05-product-checklist.md` | ROADMAP §4 rules 12-18 | **written** -- most decisions still open |
-| `06-review-checklist.md` | derived | **written** |
-| `07-onboarding-path.md` | derived | **written** -- unvalidated, nobody has walked it |
-| `08-glossary.md` | derived | **written** |
-| `09-tips-and-tricks.md` | ROADMAP §6 | **written** |
-| `templates/` | derived | **written** -- README, CHANGELOG, docs skeleton, CI stubs |
+<!--
+provenance map (review aid; strip before the handbook ships standalone)
+  00 <- embedded-linux-intro.md      05 <- ROADMAP §4 rules 12-18
+  01 <- ROADMAP §1, §2               06 <- derived
+  02 <- ROADMAP §4                   07 <- derived
+  03 <- ROADMAP §5                   08 <- derived
+  04 <- ROADMAP §4 rules 7-11        09 <- ROADMAP §6
+-->
+
+| Chapter | State |
+|---|---|
+| `00-intro-for-rtos-engineers.md` | **written** -- supersedes `embedded-linux-intro.md`, which should be deleted |
+| `01-choosing-a-build-system.md` | **written** -- Torizon section blocked on the Fischer question |
+| `02-repository-rules.md` | **written** -- rule 2 amended, see the chapter |
+| `03-readme-contract.md` | **written** |
+| `04-reproducibility.md` | **written** |
+| `05-product-checklist.md` | **written** -- most decisions still open |
+| `06-review-checklist.md` | **written** |
+| `07-onboarding-path.md` | **written** -- unvalidated, nobody has walked it |
+| `08-glossary.md` | **written** |
+| `09-tips-and-tricks.md` | **written** |
+| `templates/` | **written** -- README, CHANGELOG, docs skeleton, CI stubs |
 
 Every chapter is a **first draft written by one person**, and several encode
 decisions Byte Lab has not made. Read the status markers inside each chapter
@@ -48,7 +58,8 @@ before quoting one at a colleague.
 
 ## Evidence base, and its limits
 
-Read ROADMAP §1 before treating anything here as settled. The short version:
+These chapters rest on a narrow and uneven evidence base. Before treating
+anything here as settled:
 
 - **Telram S3** is the only real evidence of *Byte Lab* Yocto practice, and it
   is the work of a single author (Jakov Petrina, all 40 commits).

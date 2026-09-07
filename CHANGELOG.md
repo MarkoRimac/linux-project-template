@@ -30,6 +30,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   This blocked all three machines, the `qemuarm64` CI gate included, which is
   why neither a build nor a CI run had ever succeeded.
 
+- All three machine confs derived from a vendor machine (`raspberrypi5`,
+  `qemuarm64`, `rockchip-rk3576-evb`) without extending `MACHINEOVERRIDES`, so
+  every upstream `VAR:<base-machine>` was silently skipped. On `rpi5-devkit`
+  this failed loudly at `do_kernel_metadata` ("Could not locate BSP definition
+  ... and no defconfig was provided"); on `qemuarm64-bytelab` it would have
+  quietly selected the wrong kernel branch and revision, because oe-core sets
+  `KBRANCH:qemuarm64` and `SRCREV_machine:qemuarm64` that way. `ADDING-A-BOARD.md`
+  taught the same broken pattern, so it would have propagated to every new board.
+
+- Evaluated replacing kas with upstream `bitbake-setup`, which ships in
+  `yocto-6.0.3`. **Decision: stay on kas.** `bitbake-setup` has no
+  containerised-build support and no GPG tag verification, and the containerised
+  build is this template's single blessed path. Recorded with the full
+  comparison and a revisit trigger in handbook chapter 01, so the negative
+  result is not re-derived later.
+
 ### Notes on divergence from the Telram reference
 
 - Targets **wrynose 6.0 LTS** (`yocto-6.0.3`) rather than walnascar 5.2.4, which
@@ -41,8 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   same layout by preference; on this release it is not optional.
 - Byte Lab layer priorities raised to 10 (BSP) and 11 (product). Telram uses 6
   and 7, which sit *below* the vendor BSP layers (both are 9), so Byte Lab
-  overrides would silently lose. **This contradicts ROADMAP section 4 rule 2 as
-  written; the rule needs amending.**
+  overrides would silently lose. **This contradicts the drafted rule, which
+  specified 6 and 7; the rule has been amended in the handbook.**
 - `meta-bytelab-bsp` declares `LAYERDEPENDS = "core"`. Telram's equivalent
   declares `"core rockchip"`, which makes the reusable layer unbuildable without
   meta-rockchip present.

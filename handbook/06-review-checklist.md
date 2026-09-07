@@ -56,6 +56,10 @@ input, a debug feature in a release image, and a silent no-op.**
       guess that `ttyAMA10` is an RP1 quirk.
 - [ ] Device tree and overlay selection uses the mechanism the boot chain
       actually has, not the one from the last project.
+- [ ] If the machine derives from a vendor machine under a different name,
+      `MACHINEOVERRIDES` was extended to include the base name. Without it every
+      upstream `VAR:<base-machine>` is silently skipped -- which can mean the
+      wrong kernel rather than a build failure.
 - [ ] Partition layout leaves room for whatever OTA scheme was chosen.
 
 ## Images

@@ -14,6 +14,20 @@ environment scrubbing are not needed here.
 If you are on Ubuntu and want a native build, that is your call, but it is not
 what CI does and not what this document supports.
 
+### Why kas and not `bitbake-setup`
+
+`bitbake-setup` is the Yocto Project's own layer-fetching and build-setup tool,
+and it ships in the release this template pins. It is not used here for one
+decisive reason: **it has no containerised-build support** -- no docker, no
+podman, anywhere in the tool or its schema. Its answer to an unsupported host
+distro is `install-buildtools`, which is the weaker answer to the problem the
+container already solves. It also cannot verify GPG-signed release tags, which
+`kas/base.yml` relies on.
+
+Evaluated 2026-09-07 against bitbake `yocto-6.0.3`. The full comparison, and the
+conditions that would change the answer, are in the Byte Lab embedded Linux
+handbook, chapter 01.
+
 ## Prerequisites
 
 | Requirement | Notes |

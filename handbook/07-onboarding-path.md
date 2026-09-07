@@ -3,9 +3,10 @@
 Four weeks from "I know RTOS, not Linux" to "I can take a task on an embedded
 Linux project." Roughly half-time, alongside other work.
 
-> **Unvalidated.** ROADMAP Phase 5's exit criterion is that *a colleague with no
-> Yocto experience follows the docs and gets a booting image in one working day,
-> verified by actually having someone try it.* Nobody has tried it. Until they
+> **Unvalidated.** <!-- src: ROADMAP §7 phase 5 exit criteria --> The exit
+> criterion for this path is that *a colleague with no Yocto experience follows
+> the docs and gets a booting image in one working day, verified by actually
+> having someone try it.* Nobody has tried it. Until they
 > have, treat the timings as estimates and the gaps as unknown. **The first
 > person through this path should keep a log of everything that confused them,
 > and that log is the most valuable output of their first week** -- more

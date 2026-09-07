@@ -61,6 +61,13 @@ from this fragment. Never edit a fetched layer in place — kas re-clones it.
 A thin wrapper over the vendor machine conf plus our common include:
 
 ```
+# REQUIRED whenever you rename a vendor machine. BitBake keys overrides on the
+# machine name, so every `VAR:rockchip-rk3576-evb` upstream is silently skipped
+# when MACHINE is `rk3576-sige5`. That includes kernel defconfig and SRCREV
+# selection, so omitting this line does not fail loudly -- it fails at
+# do_kernel_metadata, or builds the wrong kernel.
+MACHINEOVERRIDES =. "rockchip-rk3576-evb:"
+
 require conf/machine/rockchip-rk3576-evb.conf
 require conf/machine/include/common.inc
 

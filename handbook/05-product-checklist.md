@@ -122,7 +122,8 @@ Two caveats worth stating plainly:
 - Green CI means *the template builds and the emulated target boots*. It says
   nothing about whether the product boots on real silicon.
 
-Open: GitHub Actions or GitLab CI at `git.byte-lab.com` (ROADMAP §8).
+Open: GitHub Actions or GitLab CI at `git.byte-lab.com`. Undecided, and it
+needs an owner.
 
 ---
 

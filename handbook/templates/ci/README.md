@@ -1,7 +1,7 @@
 # CI stubs
 
 Two starting points. **Which platform Byte Lab standardises on is undecided**
-(ROADMAP §8, manager ask 5) -- keep both until it is settled, then delete one.
+-- keep both until it is settled, then delete one.
 
 Both encode the same three stages, in this order for a reason:
 

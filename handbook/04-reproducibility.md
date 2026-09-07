@@ -87,7 +87,9 @@ only native and cross artifacts. The second machine will not build in ten
 minutes because the first one warmed the cache.
 
 A shared team sstate mirror is the single highest-leverage piece of build
-infrastructure available and does not exist yet -- see ROADMAP §8.
+infrastructure available, and it does not exist yet. It needs a decision on who
+owns build infrastructure and whether a host with enough disk can be
+provisioned; until then every engineer's first build is a cold one.
 
 ## 6. Start on the newest LTS, and write down its EOL
 

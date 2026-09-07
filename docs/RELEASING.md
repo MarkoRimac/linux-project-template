@@ -5,8 +5,7 @@
 
 ## Open decisions
 
-- [ ] Where the template repository lives and who owns it after handover
-      (ROADMAP section 8, manager asks 4 and 5).
+- [ ] Where the template repository lives and who owns it after handover.
 - [ ] CI platform: GitHub Actions or GitLab CI at `git.byte-lab.com`.
 - [ ] Whether `meta-bytelab-bsp` becomes its own repository, pulled in by KAS
       like any other layer, rather than living inside a product repo. This is

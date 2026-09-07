@@ -1,9 +1,10 @@
 # 03 - The README Contract
 
-Extracted from `ROADMAP.md` §5. Every Byte Lab embedded Linux repo README
-answers these nine things, in this order.
+<!-- src: ROADMAP §5 (README contract) -->
+Every Byte Lab embedded Linux repo README answers these nine things, in this
+order.
 
-The test is ROADMAP's definition of done: *an engineer new to embedded Linux
+The test is the definition of done for the whole template effort: *an engineer new to embedded Linux
 clones the repo, reads only the README and `docs/`, and has a booting image on a
 devkit within one working day, having touched no vendor documentation.*
 
