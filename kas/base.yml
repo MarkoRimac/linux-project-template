@@ -29,11 +29,20 @@ distro: bytelab
 target: bytelab-image
 
 repos:
-  # NOTE: Poky is a reference distro; we ship our own in meta-bytelab-product,
-  #       so only bare openembedded-core is needed. Verified: both
-  #       meta-raspberrypi and meta-rockchip declare LAYERDEPENDS on "core"
-  #       only (meta-rockchip additionally wants meta-oe), and qemuarm64's
-  #       machine conf lives inside openembedded-core itself.
+  # NOTE: There is no poky here, and on wrynose there cannot be: the poky
+  #       combo-layer repository is DEPRECATED upstream. Its master branch is no
+  #       longer updated and its newest release branch is walnascar (5.2) --
+  #       there is no wrynose branch and no yocto-6.x tag in poky. Upstream now
+  #       expects you to consume openembedded-core, bitbake and meta-yocto
+  #       directly, which is what this file does.
+  #
+  #       Telram's base.yml reaches the same layout by preference ("Poky is more
+  #       of a reference distro, so not really needed"). On this release it is
+  #       no longer a preference.
+  #
+  #       Verified: both meta-raspberrypi and meta-rockchip declare LAYERDEPENDS
+  #       on "core" only (meta-rockchip additionally wants meta-oe), and
+  #       qemuarm64's machine conf lives inside openembedded-core itself.
 
   bitbake:
     url: https://github.com/openembedded/bitbake.git

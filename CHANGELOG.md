@@ -23,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Targets **wrynose 6.0 LTS** (`yocto-6.0.3`) rather than walnascar 5.2.4, which
   went EOL in November 2025.
+- No poky. The poky combo-layer repository is deprecated upstream: its master
+  branch is no longer updated and its newest release branch is `walnascar`
+  (5.2), with no `wrynose` branch and no `yocto-6.x` tag. `openembedded-core`,
+  `bitbake` and `meta-yocto` are consumed directly instead. Telram reaches the
+  same layout by preference; on this release it is not optional.
 - Byte Lab layer priorities raised to 10 (BSP) and 11 (product). Telram uses 6
   and 7, which sit *below* the vendor BSP layers (both are 9), so Byte Lab
   overrides would silently lose. **This contradicts ROADMAP section 4 rule 2 as
