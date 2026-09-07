@@ -1,0 +1,36 @@
+# Changelog
+
+All notable changes to this project are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Security
+
+<!--
+Notes for this project:
+
+- Write entries for the person who will read them in a year, not for the
+  reviewer who already knows the context.
+- A `Fixed` entry says what broke and what the consequence was, not just what
+  changed. "Fixed include path" is useless; "every machine failed at
+  config-parse time, so no build had ever succeeded" is the useful part.
+- Record deliberate divergence from the reference project and why. Future you
+  will otherwise assume it was an accident and "fix" it.
+- `Security` covers CVE remediation and anything affecting the release image's
+  attack surface.
+-->
+
+## [0.1.0] - YYYY-MM-DD
+
+### Added
+
+- Initial skeleton.

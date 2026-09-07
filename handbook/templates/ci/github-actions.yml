@@ -1,0 +1,53 @@
+# GitHub Actions CI.
+#
+# NOTE: green CI means THE PROJECT BUILDS, and that the emulated target boots.
+#       It does NOT mean the product boots on real hardware.
+#
+# RUNNER REQUIREMENTS: a cold Yocto build needs ~100 GiB of disk and several
+# hours. Hosted runners cannot do this. The build jobs assume a self-hosted
+# runner labelled `yocto` with a persistent cache volume.
+#
+# A complete, working version of this file lives in the bytelab-yocto-template
+# repository at .github/workflows/ci.yml -- copy it from there and adjust the
+# layer names, machine list and guard patterns rather than filling in this stub.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  KAS_CONTAINER_ENGINE: docker
+
+jobs:
+  guards:
+    name: Layer boundary guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # 1. Board-specific strings must not escape the machine layer
+      # 2. Every layer must declare LAYERSERIES_COMPAT for the release
+      # 3. Every repo in kas/ must be pinned to a commit
+
+  build:
+    name: Build ${{ matrix.machine }}
+    runs-on: [self-hosted, yocto]
+    needs: guards
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: [qemuarm64, <board>]
+    steps:
+      - uses: actions/checkout@v4
+      # build with kas-container, publish .wic.bz2 and .wic.bmap
+
+  boot-test:
+    name: Boot test (emulated)
+    runs-on: [self-hosted, yocto]
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      # runqemu under pexpect, expect a login prompt

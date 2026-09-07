@@ -1,0 +1,98 @@
+# GitLab CI equivalent of the GitHub Actions workflow.
+#
+# NOTE: green CI means THE PROJECT BUILDS, and that the emulated target boots.
+#       It does NOT mean the product boots on real hardware.
+#
+# RUNNER REQUIREMENTS: a cold Yocto build needs ~100 GiB of disk and several
+# hours. Use a self-hosted runner tagged `yocto` with a persistent cache volume
+# for KAS_WORK_DIR; a shared runner cannot do this.
+
+stages:
+  - guards
+  - build
+  - boot-test
+
+variables:
+  KAS_CONTAINER_ENGINE: docker
+
+# Cheap, runs anywhere, fails fast.
+guards:
+  stage: guards
+  image: python:3.11-slim
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends git grep
+  script:
+    - |
+      # Board-specific strings must not escape the machine layer.
+      # Comment lines are exempt: explaining WHY a boundary exists is the
+      # opposite of violating it.
+      leaked() {
+        grep -rInE "$1" \
+          meta-<product>/ \
+          meta-<vendor>-bsp/conf/machine/include/ \
+          meta-<vendor>-bsp/recipes-core/ \
+          | grep -vE ':[0-9]+:[[:space:]]*#'
+      }
+      fail=0
+      if leaked '<board-specific strings>'; then
+        echo "Board specifics leaked outside the machine layer."; fail=1
+      fi
+      exit $fail
+    - |
+      # Every layer must declare compatibility with the release.
+      for f in meta-*/conf/layer.conf; do
+        grep -q 'LAYERSERIES_COMPAT.*<release>' "$f" \
+          || { echo "$f is not marked <release>-compatible"; exit 1; }
+      done
+    - |
+      # Repositories must be pinned to a commit, not a branch head.
+      python3 - <<'PY'
+      import re, sys, pathlib
+      bad = []
+      for p in pathlib.Path("kas").rglob("*.yml"):
+          text = p.read_text()
+          for m in re.finditer(r'^(\s{2,})(\S+):\n((?:\1\s+.*\n)+)', text, re.M):
+              if "url:" in m.group(3) and "commit:" not in m.group(3):
+                  bad.append(f"{p}: {m.group(2)}")
+      if bad:
+          print("unpinned repos:\n" + "\n".join(bad)); sys.exit(1)
+      print("all repos pinned")
+      PY
+
+.build-template: &build
+  stage: build
+  tags: [yocto]
+  script:
+    - export KAS_WORK_DIR="${CI_BUILDS_DIR}/kas-${MACHINE}"
+    - mkdir -p "$KAS_WORK_DIR"
+    - uv run kas-container build "kas/machine/${MACHINE}.yml:kas/variant/release.yml"
+  artifacts:
+    paths:
+      - ${CI_BUILDS_DIR}/kas-${MACHINE}/build/tmp/deploy/images/**/*.wic.bz2
+      - ${CI_BUILDS_DIR}/kas-${MACHINE}/build/tmp/deploy/images/**/*.wic.bmap
+    expire_in: 2 weeks
+
+build:qemu:
+  <<: *build
+  variables: { MACHINE: qemuarm64 }
+
+build:<board>:
+  <<: *build
+  variables: { MACHINE: <board> }
+
+boot-test:
+  stage: boot-test
+  tags: [yocto]
+  needs: ["build:qemu"]
+  script:
+    - export KAS_WORK_DIR="${CI_BUILDS_DIR}/kas-qemuarm64"
+    - |
+      uv run kas-container --kvm shell kas/machine/qemuarm64.yml -c '
+        python3 -c "
+      import pexpect, sys
+      child = pexpect.spawn(\"runqemu <machine> nographic slirp\", timeout=300, encoding=\"utf-8\")
+      child.logfile_read = sys.stdout
+      child.expect(r\"login:\")
+      child.sendline(\"root\"); child.expect(r\"#\")
+      child.sendcontrol(\"a\"); child.send(\"x\")
+      "'

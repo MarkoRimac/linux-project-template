@@ -22,7 +22,7 @@
 header:
   version: 19
   includes:
-    - ../base.yml
+    - kas/base.yml
 
 machine: rpi5-devkit
 target: bytelab-image

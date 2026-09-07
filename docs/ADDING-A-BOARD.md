@@ -41,7 +41,7 @@ vendor layer. Nothing else belongs here.
 header:
   version: 19
   includes:
-    - ../base.yml
+    - kas/base.yml
 
 machine: rk3576-sige5
 target: bytelab-image

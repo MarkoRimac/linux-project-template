@@ -14,7 +14,7 @@
 header:
   version: 19
   includes:
-    - ../base.yml
+    - kas/base.yml
 
 machine: qemuarm64-bytelab
 target: bytelab-image

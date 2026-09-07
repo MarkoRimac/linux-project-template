@@ -1,0 +1,99 @@
+# <product>-<customer>
+
+<One paragraph: what this builds, for whom, on what silicon.>
+
+**Yocto release:** <release> <version> LTS (`<tag>`), supported to <EOL date>.
+**Build tool:** KAS, run inside the official container.
+
+---
+
+## Status
+
+State honestly what has been *booted* versus merely *built*. A reader who knows
+which parts are load-bearing can work around gaps; one who finds out by hitting
+them cannot.
+
+| Machine | SoC | State |
+|---|---|---|
+| `<machine>` | <soc> | builds, boots on hardware |
+| `<machine>` | <soc> | **build-only -- never booted** |
+
+## Quick start
+
+> Every command below has been run in order, on a clean machine, by someone who
+> is not the author. If you change them, do that again.
+
+```sh
+# 1. Host tooling (once).
+<...>
+
+# 2. Point the build somewhere with 100+ GiB free.
+export KAS_WORK_DIR=/path/with/space/<product>-build
+export KAS_CONTAINER_ENGINE=docker
+
+# 3. Build.
+uv run kas-container build kas/machine/<board>.yml:kas/variant/debug.yml
+
+# 4. Flash.
+<...>
+```
+
+Console: **<baud> 8N1 on `<tty>`**. See [FLASHING.md](docs/FLASHING.md).
+
+## Repository layout
+
+```
+kas/                  the ONLY place repos and pins are declared
+  machine/*.yml       one fragment per board
+  variant/*.yml       debug vs release; local.conf overlays only
+meta-<vendor>-bsp/    reusable: machine confs, SoC-agnostic mechanisms
+meta-<product>/       distro, images, application recipes
+patches/              patches against upstream layers; never edit in place
+docs/                 see below
+```
+
+## Requirements
+
+| Requirement | Notes |
+|---|---|
+| Docker | running, user in the `docker` group |
+| `uv` | installs the exact pinned `kas` |
+| Disk | **100+ GiB free**; the most common way a first build fails |
+| RAM | 16 GiB minimum |
+| First build | <N> hours. Budget a day. |
+
+## Documentation
+
+| Document | Covers |
+|---|---|
+| [BUILDING.md](docs/BUILDING.md) | Host setup, disk, the one blessed build path |
+| [FLASHING.md](docs/FLASHING.md) | Getting an image onto each board |
+| [DEVELOPMENT.md](docs/DEVELOPMENT.md) | devtool, ide-sdk, dependency tracing |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Boot chain, partitions, layer diagram |
+| [ADDING-A-BOARD.md](docs/ADDING-A-BOARD.md) | The portability recipe |
+| [RELEASING.md](docs/RELEASING.md) | Versioning, signing, artifact naming |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Papercuts and their fixes |
+
+## Boot chain and partition layout
+
+<One diagram. Nobody should read machine confs to learn where the bootloader lives.>
+
+## Product decisions
+
+<Filled in from handbook chapter 05. "Not doing this, because X" is a valid
+answer; a blank is not.>
+
+| Decision | Answer |
+|---|---|
+| OTA | |
+| Secure boot | |
+| Provisioning | |
+| CVE triage owner | |
+
+## Maintainer
+
+<name> <<email>>
+
+## Licence
+
+Copyright (c) Byte Lab Grupa d.o.o.

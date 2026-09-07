@@ -19,6 +19,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI guards that fail if board-specific strings escape the machine layer, if a
   layer is not marked wrynose-compatible, or if a repo is not pinned to a commit.
 
+### Fixed
+
+- `header.includes` in all three `kas/machine/*.yml` fragments, and in the
+  copy-paste block in `docs/ADDING-A-BOARD.md`, used the file-relative path
+  `../base.yml`. kas 5.x resolves a plain-string include against the repository
+  top-level directory rather than the including file, so this resolved to
+  `/base.yml` and every machine aborted at config-parse time with
+  `include /base.yml resolves outside repository /repo`. Now `kas/base.yml`.
+  This blocked all three machines, the `qemuarm64` CI gate included, which is
+  why neither a build nor a CI run had ever succeeded.
+
 ### Notes on divergence from the Telram reference
 
 - Targets **wrynose 6.0 LTS** (`yocto-6.0.3`) rather than walnascar 5.2.4, which

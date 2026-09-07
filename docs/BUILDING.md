@@ -25,9 +25,21 @@ what CI does and not what this document supports.
 | 16 GiB+ RAM | 30 GiB is comfortable for `-j16` |
 
 ```sh
+# Debian/Ubuntu, or anywhere pipx is already present:
 pipx install uv
-uv sync
+
+# Arch/Manjaro and other PEP 668 "externally managed" distros refuse
+# `pip install --user uv`. Either install pipx from the distro
+# (`sudo pacman -S python-pipx`), or install uv standalone -- it bundles its
+# own Python and does not touch the system one:
+curl -LsSf https://astral.sh/uv/install.sh | sh   # -> ~/.local/bin/uv
+
+uv sync   # creates .venv with the exact pinned kas, and writes uv.lock
 ```
+
+`uv sync` fetches its own CPython (3.11, per `.python-version`) rather than
+using the host interpreter, so a host Python outside `pyproject.toml`'s
+`>=3.11,<3.13` range is not a problem.
 
 ## Disk space: read this before your first build
 

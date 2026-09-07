@@ -35,6 +35,40 @@ host Python is typically far newer than BitBake expects.
 path here. (Telram works around this with a `shell.nix`; the container makes
 that unnecessary.)
 
+### `pip install --user uv` fails with `externally-managed-environment`
+
+**Cause.** PEP 668. Arch, Manjaro, Debian 12+ and Ubuntu 23.04+ mark the system
+Python as externally managed, and pip refuses to install into it.
+
+**Fix.** Install `pipx` from the distro (`sudo pacman -S python-pipx`,
+`apt install pipx`) and then `pipx install uv`; or install uv standalone, which
+needs no system Python at all:
+
+```sh
+curl -LsSf https://astral.sh/uv/install.sh | sh   # -> ~/.local/bin/uv
+```
+
+Do **not** reach for `--break-system-packages`.
+
+### A long build dies when the terminal or SSH session closes
+
+**Cause.** `kas-container` runs docker in the foreground, inside your shell's
+process group, and starts the container with `--rm`. Closing the terminal kills
+the process group and the container is removed with it. A cold build is 4-10
+hours, so this is easy to hit.
+
+**Fix.** Detach it from the session:
+
+```sh
+setsid nohup uv run kas-container build \
+  kas/machine/rpi5.yml:kas/variant/debug.yml \
+  >> build.log 2>&1 < /dev/null &
+```
+
+or run it inside `tmux` / `screen`. `DL_DIR` and `SSTATE_DIR` live in
+`KAS_WORK_DIR` and survive, so a killed build resumes from sstate rather than
+from scratch -- but every task that was in flight is lost.
+
 ---
 
 ## Recipes and configuration
@@ -67,6 +101,70 @@ than working around it. Confirm with `bitbake-layers show-layers`.
 
 **Fix.** `bitbake-layers show-appends <recipe>`. Prefer `_%.bbappend` unless you
 specifically want to pin to one version.
+
+### `include /base.yml resolves outside repository /repo`
+
+**Cause.** kas resolves a plain-string entry in `header.includes` against the
+**repository top-level directory**, not against the directory of the file doing
+the including (`kas/includehandler.py`, `sanitize_include_path`). A file-relative
+`../base.yml` written in `kas/machine/` therefore escapes the repo root and is
+rejected before any recipe is parsed.
+
+**Fix.** Write includes repo-root-relative, from any depth:
+
+```yaml
+header:
+  version: 19
+  includes:
+    - kas/base.yml
+```
+
+Note this is the opposite of BitBake's own `require` / `include`, which *are*
+relative to the including file. That mismatch is what makes it easy to get wrong.
+
+### `Unable to find revision <sha> in branch <branch> even from upstream`
+
+Seen on `vim`, `systemd` and others. The pin is fine and the source is fine.
+
+**Cause.** Yocto's source-mirror tarballs
+(`mirrors.edge.kernel.org/yocto-sources/git2_*.tar.gz`) contain bare clones whose
+`HEAD` is `ref: refs/heads/.invalid`. Modern git refuses to run
+
+```sh
+git branch --contains <ref> --list <branch>
+```
+
+in such a repo, failing with `fatal: failed to resolve HEAD as a valid ref`.
+BitBake's `_contains_ref()` (`bitbake/lib/bb/fetch2/git.py:836`) sends stderr to
+`/dev/null` and counts output lines, so it reads git's hard failure as "the
+revision is not on this branch" and the fetch dies -- after successfully
+fetching the object it needs.
+
+**Fix.** Point `HEAD` at any branch that exists. It is meaningless in these bare
+source caches; BitBake always checks out an explicit revision.
+
+```sh
+for r in "$KAS_WORK_DIR"/build/downloads/git2/*/; do
+  git -C "$r" rev-parse --verify HEAD >/dev/null 2>&1 && continue
+  for b in main master; do
+    git -C "$r" show-ref --verify --quiet "refs/heads/$b" \
+      && git -C "$r" symbolic-ref HEAD "refs/heads/$b" && break
+  done
+done
+```
+
+Confirm with the check BitBake actually runs -- it must print a non-zero count:
+
+```sh
+git -C <clone> branch --contains refs/tags/<tag> --list <branch> 2>/dev/null | wc -l
+```
+
+**Note.** A fresh mirror tarball unpacked later in the same build arrives broken
+too, so a one-shot repair can be outrun by the build. Either re-run the repair
+periodically while building, or drop the premirror (`PREMIRRORS = ""`) so every
+clone comes straight from upstream with a correct `HEAD`. Which of those becomes
+the template's answer is an open decision -- dropping the premirror costs
+resilience when an upstream host is down.
 
 ---
 
