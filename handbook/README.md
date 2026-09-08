@@ -26,6 +26,7 @@ provenance map (review aid; strip before the handbook ships standalone)
   02 <- ROADMAP §4                   07 <- derived
   03 <- ROADMAP §5                   08 <- derived
   04 <- ROADMAP §4 rules 7-11        09 <- ROADMAP §6
+  10 <- manager package proposal (relayed 2026-09-08) + ROADMAP §2
 -->
 
 | Chapter | State |
@@ -40,6 +41,7 @@ provenance map (review aid; strip before the handbook ships standalone)
 | `07-onboarding-path.md` | **written** -- unvalidated, nobody has walked it |
 | `08-glossary.md` | **written** |
 | `09-tips-and-tricks.md` | **written** |
+| `10-rockchip-product-tiers.md` | **written** -- blocks on which RK3576 board we hold, and on the NPU-stack question |
 | `templates/` | **written** -- README, CHANGELOG, docs skeleton, CI stubs |
 
 Every chapter is a **first draft written by one person**, and several encode

@@ -9,6 +9,22 @@ Adding a board is three files plus a pin.
 
 ---
 
+## 0. First check the board is in scope
+
+This template is for **aarch64 application processors** with GB-class RAM,
+eMMC or SD, and upstream support in a vendor layer. A 32-bit ARMv7 part with
+tens of megabytes of RAM and SPI NAND is not a machine conf away from working:
+it needs a different tune, SoC family include, DDR blob, U-Boot defconfig and
+kernel tree, at which point nothing in `meta-bytelab-bsp` is being reused and
+`common.inc` stops being architecture-neutral. See **Scope** in the
+[README](../README.md).
+
+If the board is that class, the question to settle first is Yocto versus
+Buildroot versus the vendor SDK, in its own repository. Do not answer it by
+adding a machine here.
+
+---
+
 ## 1. Pick the vendor layer and pin it
 
 Find the layer that supports your SoC and check two things before anything else:

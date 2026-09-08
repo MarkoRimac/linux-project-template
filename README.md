@@ -9,6 +9,20 @@ board is one small `kas/machine/*.yml` fragment.
 
 ---
 
+## Scope
+
+This template targets **aarch64 Rockchip application processors** (RK3576,
+RK3588 and similar): parts with GB-class RAM, eMMC or SD storage, and support in
+upstream `meta-rockchip`.
+
+**32-bit ARMv7 Rockchip parts (RV11xx, RK350x) are out of scope.** They are a
+different architecture with 64 MB to 512 MB of RAM, frequently SPI NAND rather
+than eMMC, and no upstream `meta-rockchip` support, so nothing in
+`meta-bytelab-bsp` carries over to them: different tune, SoC family include, DDR
+blob, U-Boot defconfig and kernel tree. At that memory size a glibc + systemd
+userspace is the wrong tool regardless. Those parts want Buildroot or the vendor
+SDK, in their own repository, with that decision recorded there.
+
 ## Status
 
 | Machine | SoC | State |
