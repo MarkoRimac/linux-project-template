@@ -17,8 +17,14 @@ board is one small `kas/machine/*.yml` fragment.
 | `rpi5-devkit` | BCM2712 (Cortex-A76) | builds, boots on hardware. **Non-product target** |
 | `rk3576-sige5` | Rockchip RK3576 | **build-only — never booted, no board yet** |
 
-Nothing here has been build-verified yet: no Yocto build has run on the intended
-host. Step 1 below is the first thing to do.
+`rpi5-devkit` is verified end to end on hardware as of 2026-09-08: built under
+KAS on the build host, flashed to an SD card, booted to a serial console on the
+40-pin header, rootfs grown to fill the card on first boot, and the example
+service running. That exercises the host build, the layer pinning, the layer
+split, the distro and image recipes, and the whole first-boot path.
+
+`qemuarm64-bytelab` has not been run on the intended host yet, and
+`rk3576-sige5` has no board. Neither is verified.
 
 > The Raspberry Pi 5 target exists so the SoC-agnostic parts of this template
 > could be validated on real hardware while the RK3576 devkit decision was

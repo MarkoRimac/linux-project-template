@@ -7,5 +7,11 @@ Type=oneshot
 ExecStart=/usr/bin/hello-bytelab
 RemainAfterExit=yes
 
+# Also write to the console, not just the journal, so a devkit on a desk shows
+# the greeting on the serial terminal at boot instead of only in `journalctl`.
+# A real product service wants the default (journal only): the console is a
+# shared, slow, single-writer resource and boot-time chatter on it is noise.
+StandardOutput=journal+console
+
 [Install]
 WantedBy=multi-user.target
