@@ -126,25 +126,32 @@ ship a fixed-function appliance.
 
 ---
 
-## What Byte Lab actually has
+## What Byte Lab has, and what is on order
 
 | Board | SoC | Tier | State |
 |---|---|---|---|
-| ArmSoM Sige5 **or** LuckFox 3576 | RK3576 | high-end + AI | in hand, **believed to be the LuckFox; confirm which** |
+| ArmSoM Sige5 **or** LuckFox 3576 | RK3576 | high-end + AI | **ordered, not yet arrived**. Believed to be the LuckFox; confirm which |
 | Luckfox Pico Zero | RV1106G3, 256 MB | low-end + AI | in hand |
 | Luckfox Lyra Pi | RK3506B, 512 MB | low-end | in hand |
 
-Two things follow immediately.
+Three things follow immediately.
 
-**There is no RK3588 board.** RK3588 is half of the high-end tier in the pitch
-and cannot currently be demonstrated. It is also the cheapest gap to close: it
-is aarch64, it is in `meta-rockchip`, and it shares the boot-chain shape with
-RK3576, so it is a machine conf and a build rather than a bring-up. If one board
-is bought next, buy this one.
+**Nothing in the aarch64 tier can be booted yet.** The RK3576 board is on order,
+and it is the only in-scope board coming. Until it lands, `rk3576-sige5` stays
+build-only and every claim about the Rockchip boot chain is unverified. A
+Raspberry Pi 5 stands in for the SoC-agnostic parts and, by design, proves
+nothing about that chain.
+
+**There is no RK3588 board, and none ordered.** RK3588 is half of the high-end
+tier in the pitch and cannot be demonstrated at all. It is the cheapest gap to
+close after the RK3576 arrives: aarch64, in `meta-rockchip`, and it shares the
+boot-chain shape with RK3576, so it is a machine conf and a build rather than a
+bring-up.
 
 **The two low-end boards cannot validate the Yocto template**, by construction.
 They are the portability proof for a *different* track, not machines to add
-here.
+here. So the only hardware Byte Lab currently holds for this task is hardware
+this template does not target.
 
 ---
 
@@ -152,10 +159,10 @@ here.
 
 Three homes, not one.
 
-**1. `bytelab-yocto-template` = the aarch64 tier.** RK3576 today, RK3588 when a
-board exists. These genuinely share the layer, the tune, the vendor layer and
-the boot-chain shape, so multi-machine here is close to free and is exactly what
-the repo is for.
+**1. `bytelab-yocto-template` = the aarch64 tier.** RK3576 when its board
+arrives, RK3588 if one is bought. These genuinely share the layer, the tune, the
+vendor layer and the boot-chain shape, so multi-machine here is close to free
+and is exactly what the repo is for.
 
 Adding an ARMv7 machine to this repo would break it in specific ways, not vague
 ones: `common.inc` stops being SoC-agnostic once it straddles two architectures;
@@ -206,22 +213,28 @@ build-system-agnostic, so they can start before the tier question is settled.
 1. **Scope the template to aarch64 Rockchip application processors**, and say so
    in the template itself so the next person does not try to bolt an ARMv7
    machine onto it.
-2. **Buy an RK3588 devkit** before anything else. It is the only cheap way to
-   make the high-end tier real.
-3. **Do not start the ARMv7 tier as Yocto work.** When a product needs it, start
+2. **Boot the RK3576 the week it arrives.** It is the first and currently only
+   chance to verify any Rockchip claim in this repository. Everything about the
+   boot chain is unevidenced until then.
+3. **Buy an RK3588 devkit after that.** It is the cheap way to make the rest of
+   the high-end tier real, and none is on order today.
+4. **Do not start the ARMv7 tier as Yocto work.** When a product needs it, start
    it as a separate repo with its own build-system decision recorded per
    [chapter 01](01-choosing-a-build-system.md).
-4. **Start the update and signing story now**, on RK3576, because it is the part
-   of "a package" that has no hardware dependency and the longest lead time.
-5. **Confirm which RK3576 board we hold** (Sige5 vs LuckFox 3576). They differ in
-   DDR blob and U-Boot defconfig, so the machine conf depends on the answer.
+5. **Start the update and signing story now.** It is the part of "a package"
+   with no hardware dependency and the longest lead time, so it is the one thing
+   here that does not have to wait for a delivery.
+6. **Confirm which RK3576 board was ordered** (Sige5 vs LuckFox 3576) before it
+   arrives. They differ in DDR blob and U-Boot defconfig, and the machine conf
+   in the template is currently named `rk3576-sige5`, which may be the wrong
+   board.
 
 ---
 
 ## Open
 
-- **Which RK3576 board is in the building.** Blocks writing its machine conf
-  accurately.
+- **Which RK3576 board was ordered.** Blocks writing its machine conf
+  accurately, and the existing conf is named for one of the two options.
 - **NPU stacks.** Whether the RK35xx and RV11xx families share a runtime and
   toolchain, and what integrating either costs. Unverified; needed before any
   AI claim spans both tiers.

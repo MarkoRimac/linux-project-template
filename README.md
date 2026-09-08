@@ -29,7 +29,7 @@ SDK, in their own repository, with that decision recorded there.
 |---|---|---|
 | `qemuarm64-bytelab` | emulated aarch64 (Cortex-A57) | builds, boots under `runqemu`. CI gate |
 | `rpi5-devkit` | BCM2712 (Cortex-A76) | builds, boots on hardware. **Non-product target** |
-| `rk3576-sige5` | Rockchip RK3576 | **build-only — never booted, no board yet** |
+| `rk3576-sige5` | Rockchip RK3576 | **build-only — never booted, board on order** |
 
 `rpi5-devkit` is verified end to end on hardware as of 2026-09-08: built under
 KAS on the build host, flashed to an SD card, booted to a serial console on the
