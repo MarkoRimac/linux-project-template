@@ -62,6 +62,70 @@ banner as RK3588 implies a shared platform that cannot exist.
 
 ---
 
+## "But couldn't Yocto just build those too?"
+
+Yes. Almost entirely. This is the first question everyone asks and the table
+above does not answer it, so: **capability is not the difference.**
+
+The confusion comes from collapsing two independent axes:
+
+- **What you build.** Kernel plus userspace. glibc or musl, systemd or busybox
+  init, a 500 MB image or an 8 MB one.
+- **What builds it.** Yocto, Buildroot, or a vendor SDK.
+
+Yocto will happily build a 32-bit musl + busybox image that fits in 16 MB.
+Buildroot will happily build a fat glibc + systemd one. Neither tool owns a
+userspace size bracket. Both parts here run ordinary Linux; ARMv7 versus aarch64
+changes the toolchain triple, not the nature of the system.
+
+What differs is the **kind** of tool. Buildroot is Kconfig plus Make: configure,
+`make`, out falls one rootfs image, no package manager, no on-target install,
+about 30 minutes cold. Yocto is a framework that builds *packages* and composes
+images from them, with layers, recipes, sysroots and shared state, closer to
+running a small distro for your product, 4 to 10 hours cold.
+
+So the decision is not "can it." It is **who writes the BSP, and does the payoff
+cover it.**
+
+| | RK3576 | RV1106 / RK3506x |
+|---|---|---|
+| SoC in `meta-rockchip` | yes, plus two local patches | **no** |
+| What Yocto costs you | a machine conf | machine conf, kernel recipe around the vendor fork, U-Boot recipe and defconfig, DDR blob handling, device trees, ISP/NPU integration |
+| What the vendor hands you | little you need | a Buildroot SDK that boots today |
+| Bring-up effort | days | **weeks** |
+
+### The part that actually settles it
+
+> At 64 to 256 MB on SPI NAND, the specific things Yocto is good at are the
+> things that device cannot use, while Yocto's costs apply in full.
+
+On-target package feeds: no room for a package manager, and you reflash whole
+images anyway. Updating one package post-ship: same answer. A CVE-tracked LTS
+with an SBOM across a five-year life: plausible on a gateway, much less so on a
+fixed-function camera module. You would pay the entire complexity and build-time
+bill and collect almost none of the return.
+
+Note this is **not** the RAM argument in disguise. You could build musl +
+busybox under Yocto and fit comfortably. You would simply have spent weeks
+writing a BSP in order to obtain a small image, which is what Buildroot gives
+you on day one.
+
+### What would flip it
+
+Reach for Yocto on a small part anyway when any of these becomes true, and write
+down which one you are betting on:
+
+- the vendor layer gains real support for the SoC, so bring-up cost collapses;
+- the product acquires a genuine long-term security obligation, with an SBOM and
+  someone accountable for CVEs;
+- it needs to share a BSP layer with a larger sibling product, so one layer
+  serves both and the cost is amortised.
+
+Absent one of those, choosing Yocto for these parts is paying for a distro to
+ship a fixed-function appliance.
+
+---
+
 ## What Byte Lab actually has
 
 | Board | SoC | Tier | State |
