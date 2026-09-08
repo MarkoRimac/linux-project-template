@@ -1,0 +1,35 @@
+# short-description: Raspberry Pi SD card image with a GPT disk label
+# long-description: The same two partitions as meta-raspberrypi's
+# sdimage-raspberrypi.wks (FAT boot, ext4 root), but GPT labelled and with
+# explicit partition type GUIDs, so the first-boot growth path works.
+#
+# Copyright (c) Byte Lab Grupa d.o.o.
+#
+# WHY THIS FILE EXISTS.
+#
+# systemd-repart only ever touches GPT disks. Handed an MBR one it logs
+#
+#     Disk /dev/mmcblk0 has no GPT disk label, not repartitioning.
+#
+# and exits 0. The vendor .wks produces MBR, so on that layout the root
+# partition is never enlarged; x-systemd.growfs then resizes the filesystem
+# into the partition it already had and also reports success. Both units end
+# up `active`, nothing errors, and the card is silently never claimed.
+#
+# PARTITION TYPE GUIDS ARE LOAD-BEARING.
+#
+# recipes-core/systemd/files/50-root.conf picks the partition to grow with
+# `Type=root`, which resolves to the Discoverable Partitions Specification
+# root GUID for the target architecture. The root partition below must carry
+# that exact GUID (aarch64: b921b045-1df0-41c3-af44-4c6f280d3fae) or repart
+# will not match the partition that is already there and will try to create a
+# second root partition in the free space instead of growing this one.
+#
+# The boot partition is typed as an EFI System Partition. The Pi firmware
+# finds it by scanning for a FAT filesystem rather than by GUID, but ESP is
+# the conventional type and keeps the layout legible to host-side tooling.
+
+part /boot --source bootimg-partition --ondisk mmcblk0 --fstype=vfat --label boot --align 4096 --size 128 --part-type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+part /     --source rootfs            --ondisk mmcblk0 --fstype=ext4 --label root --align 4096                --part-type=B921B045-1DF0-41C3-AF44-4C6F280D3FAE
+
+bootloader --ptable gpt

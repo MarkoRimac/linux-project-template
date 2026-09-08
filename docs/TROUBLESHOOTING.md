@@ -210,11 +210,29 @@ habit.
 
 ### Rootfs did not grow to fill the card
 
-**Cause.** systemd never ran its first-boot logic, so `systemd-repart` and
-`systemd-growfs-root` never fired.
+Both causes below leave every unit `active` and nothing in a failed state.
+**Do not diagnose this with `systemctl status`; read the journal.**
+
+```sh
+journalctl -u systemd-repart -u systemd-growfs-root --no-pager
+```
+
+**Cause 1: the disk label is not GPT.** `systemd-repart` only works on GPT.
+On MBR it logs `has no GPT disk label, not repartitioning` and exits 0, so the
+partition is never enlarged. `systemd-growfs-root` then grows the filesystem
+into the unchanged partition and reports `Successfully resized "/"` at the
+built rootfs size, which reads like success until you compare it against the
+card.
+
+**Fix.** Run `fdisk -l` against the card on your host. If it reports
+`Disklabel type: dos`, the machine is using a vendor `.wks`. Point `WKS_FILE`
+at a GPT one; `meta-bytelab-bsp/wic/sdimage-rpi-gpt.wks` is the worked example,
+and its root partition type GUID has to match what `50-root.conf` asks for.
+
+**Cause 2: systemd never ran its first-boot logic**, so neither unit fired at
+all. The journal shows no entries for either.
 
 **Fix.** Confirm `bytelab-image.bb` still has
 `ROOTFS_POSTPROCESS_COMMAND:remove = "systemd_handle_machine_id"`. Without it
 `/etc/machine-id` is populated at build time and systemd does not consider the
-boot to be the first one. Then check
-`systemctl status systemd-repart systemd-growfs-root`.
+boot to be the first one.

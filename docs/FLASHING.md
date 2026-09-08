@@ -109,6 +109,14 @@ findmnt /
 df -h /
 ```
 
-If it did not, the first-boot repart path failed. Start with
-`systemctl status systemd-repart systemd-growfs-root` and see
+If it did not, the first-boot repart path failed. Read the journal, not the
+unit status:
+
+```sh
+journalctl -u systemd-repart -u systemd-growfs-root --no-pager
+```
+
+Both units report success while doing nothing when the card is not GPT
+labelled, so `systemctl status` shows `active` either way. See
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md) and
 [ARCHITECTURE.md](ARCHITECTURE.md).

@@ -112,7 +112,7 @@ If you want to see a genuine TF-A + U-Boot handoff without a Rockchip board, use
 ## Partition layout and first boot
 
 The image is built with `wic` on every machine; only the `.wks` and the write
-tool differ (`sdimage-raspberrypi.wks` + `bmaptool` vs `rockchip-wic.inc` +
+tool differ (`sdimage-rpi-gpt.wks` + `bmaptool` vs `rockchip-wic.inc` +
 `rkdeveloptool`). The rootfs is deliberately built small and grown on first boot:
 
 1. `meta-bytelab-bsp/recipes-core/base-files/files/fstab` mounts `/` with
@@ -128,3 +128,26 @@ tool differ (`sdimage-raspberrypi.wks` + `bmaptool` vs `rockchip-wic.inc` +
 
 That last line is the non-obvious one. Verify it worked with `findmnt /` and
 `df -h /` on the booted board.
+
+### The disk label has to be GPT
+
+`systemd-repart` refuses any disk that is not GPT. Handed an MBR one it logs
+
+```
+Disk /dev/mmcblk0 has no GPT disk label, not repartitioning.
+```
+
+and **exits successfully**. Step 1 then resizes the filesystem into a partition
+that never grew, and also reports success. Both units end up `active`, nothing
+appears in a failed state, and the card is silently never claimed. `systemctl
+status` is therefore useless here; read the journal.
+
+This is why `rpi5-devkit` overrides `WKS_FILE` rather than taking the vendor
+`.wks`, which is MBR. Any new machine needs a GPT layout for the same reason.
+
+The partition **type GUID** matters as much as the label. `50-root.conf`
+selects what to grow with `Type=root`, which resolves to the Discoverable
+Partitions Specification root GUID for the target architecture
+(`b921b045-1df0-41c3-af44-4c6f280d3fae` on aarch64). A root partition carrying
+any other GUID is not recognised as the one to grow, and repart will try to
+create a second root partition in the free space instead.

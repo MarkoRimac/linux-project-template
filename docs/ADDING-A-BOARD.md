@@ -81,6 +81,7 @@ What belongs in this file, and nowhere else:
 |---|---|
 | `SERIAL_CONSOLES` | Per-board, per-header: `ttyAMA0` (qemuarm64-bytelab), `ttyAMA0` (rpi5-devkit, remapped to the 40-pin header), `ttyFIQ0` (rk3576-sige5) |
 | `KERNEL_DEVICETREE` | Which DTB to build and deploy |
+| `WKS_FILE` | Partition layout. Must be GPT, or first-boot growth silently no-ops |
 | `UBOOT_MACHINE` | The U-Boot defconfig for this board |
 | `UBOOT_EXTLINUX_FDTOVERLAYS` | Board overlays (cameras, displays) |
 | `MACHINE_FEATURES` | What the hardware actually has |
@@ -110,8 +111,12 @@ Then, in order:
 1. The build reaches `do_image_wic`.
 2. The image writes to the boot medium (see [FLASHING.md](FLASHING.md)).
 3. A serial console reaches a login prompt at the console you set in step 3.
-4. `findmnt /` shows the rootfs grown to the medium, proving the first-boot
-   repart path works on this board.
+4. `df -h /` shows the rootfs grown to the medium, proving the first-boot
+   repart path works on this board. Compare it against the medium's actual
+   size, and if it falls short read
+   `journalctl -u systemd-repart -u systemd-growfs-root`. Both units report
+   success on a non-GPT card while doing nothing, so a green `systemctl status`
+   proves nothing here. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 Record every papercut in [TROUBLESHOOTING.md](TROUBLESHOOTING.md) while it is
 still fresh. That file is the point of this exercise as much as the image is.
