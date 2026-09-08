@@ -19,7 +19,7 @@ SoC-agnostic mechanisms every Byte Lab product wants, and nothing else.
 | `conf/machine/include/common.inc` | Settings shared by all machines |
 | `recipes-core/systemd/` | `systemd-repart` config so the rootfs grows on first boot |
 | `recipes-core/base-files/` | `fstab` with `x-systemd.growfs` on `/` |
-| `wic/sdimage-rpi-gpt.wks` | GPT card layout. `systemd-repart` ignores MBR disks |
+| `files/wic/sdimage-rpi-gpt.wks` | GPT card layout. `systemd-repart` ignores MBR disks |
 | `classes/local-git.bbclass` | Lets `file://` git mirrors refresh |
 
 ## Rules for this layer
