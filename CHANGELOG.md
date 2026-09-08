@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   image pair, example application recipe, docs and CI.
 - Three machines: `qemuarm64-bytelab` (CI boot gate), `rpi5-devkit`
   (non-product, validates the SoC-agnostic parts on real hardware),
-  `rk3576-sige5` (the real target, build-only until a devkit is available).
+  `rk3576-devkit` (the real target, build-only until a devkit is available).
 - `systemd-repart` + `x-systemd.growfs` first-boot rootfs expansion, lifted from
   the reference project.
 - CI guards that fail if board-specific strings escape the machine layer, if a

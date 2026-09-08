@@ -42,7 +42,7 @@ uploaded a bootstrap payload:
 
 ```sh
 sudo rkdeveloptool db RK3576_MiniLoaderAll.bin     # bootstrap
-sudo rkdeveloptool wl 0 bytelab-image-rk3576-sige5.rootfs.wic
+sudo rkdeveloptool wl 0 bytelab-image-rk3576-devkit.rootfs.wic
 sudo rkdeveloptool rd                              # reboot
 ```
 

@@ -64,7 +64,7 @@ A single aarch64 image is **60-90 GiB** of `tmp/` plus a shared `downloads/` and
 |---|---|
 | `qemuarm64-bytelab` | `cortexa57` |
 | `rpi5-devkit` | `cortexa76` |
-| `rk3576-sige5` | `cortexa72-cortexa53-crypto` |
+| `rk3576-devkit` | `cortexa72-cortexa53-crypto` |
 
 Different tunes share **no target sstate**. Only native and cross artifacts are
 reused between them, so do not expect the second machine to build quickly

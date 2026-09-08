@@ -1,6 +1,6 @@
 # Adding a board
 
-The worked example below is **`rk3576-sige5`**, a Rockchip board with a full
+The worked example below is **`rk3576-devkit`**, a Rockchip board with a full
 boot chain. It is deliberately not the Raspberry Pi 5: a Pi needs no bootloader
 recipe, selects its device tree through `config.txt`, and flashes with `dd`.
 Following the Pi would teach habits that are wrong on every SoC Byte Lab ships.
@@ -38,9 +38,16 @@ curl -s https://raw.githubusercontent.com/<org>/<layer>/wrynose/conf/layer.conf 
 - `LAYERSERIES_COMPAT` must include `wrynose`. If it does not, the board is not
   ready for our LTS and that is a decision to escalate, not to work around.
 - `BBFILE_PRIORITY` must be **below 10**, or `meta-bytelab-bsp` will lose
-  override contests. Both `meta-raspberrypi` and `meta-rockchip` are 9.
-- `LAYERDEPENDS` tells you what else you must add. `meta-rockchip` needs
-  `openembedded-layer` (meta-oe), which `kas/base.yml` already provides.
+  override contests. Read it, do not assume it: at the pinned commits
+  `meta-raspberrypi` is 9 and `meta-rockchip` is 1.
+- `LAYERDEPENDS` tells you what else you must add, and it differs per layer.
+  `meta-raspberrypi` needs only `core`; `meta-rockchip` needs `core meta-arm`,
+  so its machine fragment has to pull `meta-arm` in.
+- **Check the SoC is actually in there.** A layer supporting a family does not
+  mean it supports your part. `grep -ri <soc>` over the layer at the pinned
+  commit is the check, and it is worth doing before promising a date: on
+  wrynose, `meta-rockchip` carries rk3588/rk3568/rk3566/rk3308 and has no
+  rk3576 or rk3506 at all.
 
 Resolve a real commit, never track a branch head:
 
@@ -59,7 +66,7 @@ header:
   includes:
     - kas/base.yml
 
-machine: rk3576-sige5
+machine: rk3576-devkit
 target: bytelab-image
 
 repos:
@@ -74,28 +81,43 @@ from this fragment. Never edit a fetched layer in place — kas re-clones it.
 
 ## 3. Write `meta-bytelab-bsp/conf/machine/<board>.conf`
 
-A thin wrapper over the vendor machine conf plus our common include:
+A thin wrapper over the vendor's **SoC include** plus our common include:
 
 ```
-# REQUIRED whenever you rename a vendor machine. BitBake keys overrides on the
-# machine name, so every `VAR:rockchip-rk3576-evb` upstream is silently skipped
-# when MACHINE is `rk3576-sige5`. That includes kernel defconfig and SRCREV
-# selection, so omitting this line does not fail loudly -- it fails at
-# do_kernel_metadata, or builds the wrong kernel.
-MACHINEOVERRIDES =. "rockchip-rk3576-evb:"
-
-require conf/machine/rockchip-rk3576-evb.conf
+require conf/machine/include/rk3576.inc
 require conf/machine/include/common.inc
 
 MACHINE_ESSENTIAL_EXTRA_RDEPENDS += "u-boot kernel-devicetree"
 SERIAL_CONSOLES = "115200;ttyFIQ0"
+
+KERNEL_DEVICETREE = "rockchip/<board>.dtb"
+UBOOT_MACHINE = "<board>_defconfig"
 ```
+
+Prefer requiring the **SoC include** over a vendor *machine* conf. A machine
+conf carries another board's device tree, defconfig and peripheral assumptions
+that you then have to unpick; the SoC include carries only what is true of the
+silicon.
+
+If you do derive from a vendor machine conf, one extra line is mandatory:
+
+```
+MACHINEOVERRIDES =. "<vendor-machine-name>:"
+```
+
+BitBake keys overrides on the machine **name**, so every `VAR:<vendor-machine>`
+upstream is silently skipped once `MACHINE` is your name. That can include the
+kernel defconfig and SRCREV selection, and it does not fail loudly: it fails
+later at `do_kernel_metadata`, or quietly builds the wrong kernel.
+`rpi5-devkit.conf` is the worked example, because `meta-raspberrypi` offers no
+usable SoC include and deriving from `raspberrypi5.conf` is the only option
+there.
 
 What belongs in this file, and nowhere else:
 
 | Variable | Why it is per-machine |
 |---|---|
-| `SERIAL_CONSOLES` | Per-board, per-header: `ttyAMA0` (qemuarm64-bytelab), `ttyAMA0` (rpi5-devkit, remapped to the 40-pin header), `ttyFIQ0` (rk3576-sige5) |
+| `SERIAL_CONSOLES` | Per-board, per-header: `ttyAMA0` (qemuarm64-bytelab), `ttyAMA0` (rpi5-devkit, remapped to the 40-pin header), `ttyFIQ0` (rk3576-devkit) |
 | `KERNEL_DEVICETREE` | Which DTB to build and deploy |
 | `WKS_FILE` | Partition layout. Must be GPT, or first-boot growth silently no-ops |
 | `UBOOT_MACHINE` | The U-Boot defconfig for this board |

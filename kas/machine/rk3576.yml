@@ -1,25 +1,34 @@
 #
 # Copyright (c) Byte Lab Grupa d.o.o.
 #
-# Machine #2: Rockchip RK3576 (ArmSoM Sige5). THIS IS THE REAL TARGET.
+# Machine #2: Rockchip RK3576. THIS IS THE REAL TARGET.
 #
-# Build-only until an RK3576 devkit is available. `bitbake bytelab-image`
-# reaching do_image_wic on wrynose is what answers ROADMAP risk #2
-# ("meta-rockchip + RK3576 patches do not apply on wrynose 6.0"). Booting it
+# Build-only until the ordered devkit arrives. `bitbake bytelab-image` reaching
+# do_image_wic on wrynose is what answers the "does RK3576 work on wrynose 6.0"
+# risk. Booting it, and therefore verifying anything about the boot chain,
 # requires the board.
 #
-# NOTE: meta-rockchip's wrynose branch already ships conf/machine/
-#       rockchip-rk3576-evb.conf (plus rk3588/rk3568/rk3506), so the reference project's two
-#       local patches may be wholly or partly redundant here. Diff them against
-#       this branch before carrying them over; drop the `patches:` block below
-#       entirely if upstream now covers it. See docs/ADDING-A-BOARD.md.
+# UPSTREAM HAS NO RK3576. Verified against the pinned commit below: `grep -ri
+# 3576` over meta-rockchip returns nothing at all. There is no
+# conf/machine/include/rk3576.inc, no EVB machine conf, and no rkbin entries for
+# the DDR, BL31 or BL32 blobs. rk3588/rk3588s/rk3568/rk3566/rk3308 are present;
+# rk3576 and rk3506 are not.
 #
-# The reference project (see README.md) carries two such patches:
-#     0001-conf-machine-include-add-support-for-rk3576.patch
-#     0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
-# 0001 touches rockchip-rkbin-ddr_git.bb, rockchip-rkbin-tf-a_git.bb,
-# rockchip-rkbin-optee-os_git.bb, trusted-firmware-a_%.bbappend and
-# u-boot-rockchip.inc.
+# So the patch below is not optional and not a convenience: without it,
+# rk3576-devkit.conf fails at parse time on its `require`.
+#
+# The patch is a rebase of the reference project's equivalent, not a copy. Two
+# things changed on wrynose and both matter:
+#   1. The rkbin recipes were refactored from per-SoC do_deploy() overrides to
+#      variables (RKBIN_BINVERS / RKBIN_BINFILE / RKBIN_DEPLOY_FILENAME), so
+#      the additions are declarative and no longer accept a glob.
+#   2. Because globs are gone, the blob filenames must be exact. They are taken
+#      from the rkbin SRCREV that meta-rockchip pins (f43a462e): DDR v1.09,
+#      BL31 v1.15, BL32 v1.05. The reference's v1.08 DDR blob does not exist at
+#      that revision, so copying its patch verbatim would fail the fetch.
+#
+# u-boot-rockchip.inc needed no change: BL31 now deploys to a generic path and
+# ROCKCHIP_TPL is derived from SOC_FAMILY, both of which resolve for rk3576.
 #
 
 header:
@@ -27,23 +36,22 @@ header:
   includes:
     - kas/base.yml
 
-machine: rk3576-sige5
+machine: rk3576-devkit
 target: bytelab-image
 
 repos:
-  # meta-rockchip needs meta-oe (LAYERDEPENDS = "core openembedded-layer"),
-  # which base.yml already provides.
+  # NOTE: LAYERDEPENDS_rockchip = "core meta-arm". It does NOT depend on
+  #       meta-oe, so meta-arm below is a hard requirement rather than a
+  #       convenience. Its BBFILE_PRIORITY is 1, well below meta-bytelab-bsp's
+  #       10, so our overrides win.
   meta-rockchip:
     url: https://git.yoctoproject.org/meta-rockchip
     branch: wrynose
     commit: 9d02575bfd9ca5e87c394f593f2bbdbdee914d4e
-    # patches:
-    #   0001-rk3576-support:
-    #     repo: meta-local
-    #     path: patches/0001-conf-machine-include-add-support-for-rk3576.patch
-    #   0002-sige5-support:
-    #     repo: meta-local
-    #     path: patches/0002-conf-machine-add-support-for-ArmSoM-Sige5.patch
+    patches:
+      0001-rk3576-support:
+        repo: meta-local
+        path: patches/0001-meta-rockchip-add-rk3576-support.patch
 
   meta-arm:
     url: https://git.yoctoproject.org/meta-arm.git
@@ -52,10 +60,3 @@ repos:
     layers:
       meta-arm:
       meta-arm-toolchain:
-
-local_conf_header:
-  # The reference project accepts these for ffmpeg. Keep the justification
-  # next to the flag. Remove if the image does not pull ffmpeg in.
-  licenses: |
-    # Required by ffmpeg, which the reference project's product image installs.
-    # LICENSE_FLAGS_ACCEPTED += " commercial_ffmpeg commercial"
