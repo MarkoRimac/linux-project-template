@@ -17,7 +17,7 @@ S = "${UNPACKDIR}"
 inherit systemd
 
 SYSTEMD_SERVICE:${PN} = "hello-bytelab.service"
-SYSTEMD_AUTO_ENABLE = "disable"
+SYSTEMD_AUTO_ENABLE = "enable"
 
 do_compile() {
 	${CC} ${CFLAGS} ${LDFLAGS} -o hello-bytelab ${S}/hello-bytelab.c
