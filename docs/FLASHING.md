@@ -76,10 +76,11 @@ bzcat bytelab-image-debug-rpi5-devkit.rootfs.wic.bz2 | sudo dd of=/dev/sdX bs=4M
 sync
 ```
 
-Console: **115200 8N1 on `ttyAMA10`**, on the dedicated 3-pin debug UART header
-(not the 40-pin GPIO header). `ttyAMA10` rather than `ttyAMA0` is an RP1
-southbridge quirk of the Pi 5; if you see nothing, that mismatch is the first
-thing to check.
+Console: **115200 8N1 on `ttyAMA0`**, on the 40-pin GPIO header (physical pins
+8/10, GPIO14/15) -- a 3.3 V USB-UART adapter is enough, no Debug Probe/JST-SH
+cable needed. This is a template override: the Pi 5's own default is the
+dedicated 3-pin debug UART header at `ttyAMA10` (an RP1 southbridge quirk); see
+`rpi5-devkit.conf` for why this machine remaps it.
 
 There is no MaskROM equivalent and no bootstrap payload. The Pi's boot firmware
 lives in an SPI EEPROM and is updated separately from the image.

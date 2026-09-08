@@ -199,9 +199,11 @@ and confirm you still get everything it sets.
 
 ### Raspberry Pi 5: no serial output at all
 
-**Cause.** Usually the wrong UART. The Pi 5 console is `ttyAMA10` (an RP1
-southbridge quirk), on the dedicated 3-pin debug header, not the 40-pin GPIO
-header.
+**Cause.** Usually the wrong UART. This template's `rpi5-devkit` machine
+remaps the console to `ttyAMA0` on the 40-pin GPIO header (pins 8/10,
+GPIO14/15) -- the Pi 5's own default is `ttyAMA10` on the dedicated 3-pin
+debug header (an RP1 southbridge quirk), which is easy to reach for out of
+habit.
 
 **Fix.** Check the header, then confirm `SERIAL_CONSOLES` with
 `bitbake -e bytelab-image | grep ^SERIAL_CONSOLES=`.

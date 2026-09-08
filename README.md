@@ -51,8 +51,9 @@ bmaptool copy \
   /dev/sdX                            # check the device name first!
 ```
 
-Then attach a 3.3 V USB-UART to the Pi's debug header and open the console at
-**115200 8N1 on `ttyAMA10`**. See [docs/FLASHING.md](docs/FLASHING.md).
+Then attach a 3.3 V USB-UART to the Pi's 40-pin GPIO header (pins 8/10,
+GPIO14/15) and open the console at **115200 8N1 on `ttyAMA0`**. See
+[docs/FLASHING.md](docs/FLASHING.md).
 
 ## Repository layout
 

@@ -79,7 +79,7 @@ What belongs in this file, and nowhere else:
 
 | Variable | Why it is per-machine |
 |---|---|
-| `SERIAL_CONSOLES` | Three boards, three answers: `ttyAMA0`, `ttyAMA10`, `ttyFIQ0` |
+| `SERIAL_CONSOLES` | Per-board, per-header: `ttyAMA0` (qemuarm64-bytelab), `ttyAMA0` (rpi5-devkit, remapped to the 40-pin header), `ttyFIQ0` (rk3576-sige5) |
 | `KERNEL_DEVICETREE` | Which DTB to build and deploy |
 | `UBOOT_MACHINE` | The U-Boot defconfig for this board |
 | `UBOOT_EXTLINUX_FDTOVERLAYS` | Board overlays (cameras, displays) |
